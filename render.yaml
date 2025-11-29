@@ -1,0 +1,33 @@
+services:
+  # Backend Service
+  - type: web
+    name: kappa-collector-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd Backend && npm install
+    startCommand: cd Backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: JWT_SECRET
+        value: your-secret-key-12345
+
+  # Frontend Static Site
+  - type: web
+    name: kappa-collector-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://kappa-collector.onrender.com
+
