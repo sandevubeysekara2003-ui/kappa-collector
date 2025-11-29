@@ -1,0 +1,14 @@
+.dot-grid-simple{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image: radial-gradient(var(--dg-dot-size,6px) var(--dg-dot-size,6px) at 0 0, transparent 0);
+  background-size: calc(var(--dg-dot-size,6px) + var(--dg-gap,24px)) calc(var(--dg-dot-size,6px) + var(--dg-gap,24px));
+  background-position: 0 0;
+  opacity:1;
+}
+
+/* subtle overlay for dark/light backgrounds */
+@media (max-width: 768px){
+  .dot-grid-simple{ opacity:0.6 }
+}

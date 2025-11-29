@@ -1,0 +1,240 @@
+[
+  {
+    "id": 1,
+    "name": "BAT-12 face validation ",
+    "description": "Face validation to check the structure of the translated scale ",
+    "type": "face-validity",
+    "adminId": 3,
+    "originalScaleItems": [
+      {
+        "id": 1764350524354,
+        "text": "I feel mentally exhausted"
+      },
+      {
+        "id": 1764350525179,
+        "text": "I find it hard to recover my energy"
+      },
+      {
+        "id": 1764350525554,
+        "text": "I feel physically exhausted"
+      },
+      {
+        "id": 1764350525895,
+        "text": "I struggle to find any enthusiasm for my  work"
+      },
+      {
+        "id": 1764350526189,
+        "text": "I feel a strong aversion towards my job"
+      },
+      {
+        "id": 1764350526617,
+        "text": "I’m cynical about what my work means to others"
+      },
+      {
+        "id": 1764350527027,
+        "text": "I feel unable to control my emotions"
+      },
+      {
+        "id": 1764350529001,
+        "text": " I do not recognize myself in the way I react emotionally"
+      },
+      {
+        "id": 1764350530487,
+        "text": "I may overreact unintentionally"
+      },
+      {
+        "id": 1764350532063,
+        "text": " I have trouble staying focused"
+      },
+      {
+        "id": 1764350534128,
+        "text": "I have trouble concentrating"
+      },
+      {
+        "id": 1764350534366,
+        "text": "- I make mistakes because I have my mind on other things"
+      }
+    ],
+    "translatedScaleItems": [
+      {
+        "id": 1764350498564,
+        "text": "\tමට මානසිකව වෙහෙසක් දැනෙන්වා"
+      },
+      {
+        "id": 1764350502586,
+        "text": "\tමගේ ශක්තිය නැවත ලබා ගැනීමට අපහසුයි"
+      },
+      {
+        "id": 1764350504045,
+        "text": "\tමගේ ඇගට වෙහෙසයි"
+      },
+      {
+        "id": 1764350505499,
+        "text": "\tමාගේ රාජකාරි උදෙසා කිසියම් හෝ උද්යෝගීමත් භාවයක් සොයා ගැනීමට මම වෙහෙසෙනවා"
+      },
+      {
+        "id": 1764350505862,
+        "text": "\tමට රාජකාරිය ගැන දැඩි පිලිකුල් සහගත බවක් දැනෙන්වා"
+      },
+      {
+        "id": 1764350507443,
+        "text": "\tමගේ රාජකාරිය ගැන අනෙක් අය හිතන විදිහ පිලිබදව මට අසුභවාදී අදහසක් පවතිනවා"
+      },
+      {
+        "id": 1764350508595,
+        "text": "\tමට හැගීම් පාලනය කරගන්න බැරි බවක් දැනෙනවා"
+      },
+      {
+        "id": 1764350509324,
+        "text": "\tමා හැගීම වලට ප්‍රතිචාර දක්වන විදිය අනුව මට මාව අදුරගන්න අමාරුයි."
+      },
+      {
+        "id": 1764350510742,
+        "text": "\tමම නොදැනුවත්ව ඕනෑවට වඩා ප්‍රතිචාර දක්වනවා වෙන්න පුලුවන්"
+      },
+      {
+        "id": 1764350511261,
+        "text": "\tමට අවධානය පවත්වා ගැනීමට අපහසුයි"
+      },
+      {
+        "id": 1764350516551,
+        "text": ".\tමට නිසි කල්පනාවෙන් කටයුතු කිරීමට අපහසුයි"
+      },
+      {
+        "id": 1764350517346,
+        "text": "\tමාගේ මනස වෙනත් දේවල් වලට යොමු වන නිසා මා අතපසුවිම් සිදුකරනවා "
+      }
+    ],
+    "createdAt": "2025-11-28T17:20:47.107Z",
+    "expertResponses": [
+      {
+        "id": 1764377100800,
+        "expertName": "Kavindu Anthony ",
+        "expertEmail": "thiyubrysekara@gmail.com",
+        "responses": {
+          "item0_criteria1": 0,
+          "item0_criteria2": 0,
+          "item0_criteria3": 0,
+          "item0_criteria4": 0,
+          "item0_criteria5": 0,
+          "item0_criteria6": 0,
+          "item0_criteria7": 0,
+          "item0_criteria8": 0,
+          "item0_criteria9": 0,
+          "item0_criteria10": 0,
+          "item1_criteria10": 0,
+          "item1_criteria9": 0,
+          "item1_criteria8": 0,
+          "item1_criteria7": 0,
+          "item1_criteria6": 0,
+          "item1_criteria5": 0,
+          "item1_criteria4": 1,
+          "item1_criteria3": 1,
+          "item1_criteria2": 1,
+          "item1_criteria1": 1,
+          "item2_criteria1": 1,
+          "item2_criteria2": 1,
+          "item2_criteria3": 1,
+          "item2_criteria4": 1,
+          "item2_criteria5": 1,
+          "item2_criteria6": 1,
+          "item2_criteria7": 1,
+          "item2_criteria8": 1,
+          "item2_criteria9": 1,
+          "item2_criteria10": 1,
+          "item3_criteria10": 1,
+          "item3_criteria9": 1,
+          "item3_criteria8": 1,
+          "item3_criteria7": 1,
+          "item3_criteria6": 1,
+          "item3_criteria5": 1,
+          "item3_criteria4": 1,
+          "item3_criteria3": 1,
+          "item3_criteria2": 1,
+          "item3_criteria1": 1,
+          "item4_criteria1": 1,
+          "item4_criteria2": 1,
+          "item4_criteria3": 1,
+          "item4_criteria4": 1,
+          "item4_criteria5": 1,
+          "item4_criteria6": 1,
+          "item4_criteria7": 1,
+          "item4_criteria8": 1,
+          "item4_criteria9": 1,
+          "item4_criteria10": 1,
+          "item5_criteria10": 1,
+          "item5_criteria9": 1,
+          "item5_criteria8": 1,
+          "item5_criteria7": 1,
+          "item5_criteria6": 1,
+          "item5_criteria5": 1,
+          "item5_criteria4": 1,
+          "item5_criteria3": 1,
+          "item5_criteria2": 1,
+          "item5_criteria1": 1,
+          "item6_criteria1": 1,
+          "item6_criteria2": 1,
+          "item6_criteria3": 1,
+          "item6_criteria4": 1,
+          "item6_criteria5": 1,
+          "item6_criteria6": 1,
+          "item6_criteria7": 1,
+          "item6_criteria8": 1,
+          "item6_criteria9": 1,
+          "item6_criteria10": 1,
+          "item7_criteria1": 1,
+          "item7_criteria2": 1,
+          "item7_criteria3": 1,
+          "item7_criteria4": 1,
+          "item7_criteria5": 1,
+          "item7_criteria6": 1,
+          "item7_criteria7": 1,
+          "item7_criteria8": 1,
+          "item7_criteria9": 1,
+          "item7_criteria10": 1,
+          "item8_criteria10": 1,
+          "item8_criteria9": 1,
+          "item8_criteria8": 1,
+          "item8_criteria7": 1,
+          "item8_criteria6": 1,
+          "item8_criteria5": 1,
+          "item8_criteria4": 1,
+          "item8_criteria3": 1,
+          "item8_criteria2": 1,
+          "item8_criteria1": 1,
+          "item9_criteria1": 1,
+          "item9_criteria2": 1,
+          "item9_criteria3": 1,
+          "item9_criteria4": 1,
+          "item9_criteria5": 1,
+          "item9_criteria6": 1,
+          "item9_criteria7": 1,
+          "item9_criteria8": 1,
+          "item9_criteria9": 1,
+          "item9_criteria10": 1,
+          "item10_criteria10": 1,
+          "item10_criteria9": 1,
+          "item10_criteria8": 1,
+          "item10_criteria7": 1,
+          "item10_criteria6": 1,
+          "item10_criteria5": 1,
+          "item10_criteria4": 1,
+          "item10_criteria3": 1,
+          "item10_criteria2": 1,
+          "item10_criteria1": 1,
+          "item11_criteria1": 1,
+          "item11_criteria2": 1,
+          "item11_criteria3": 1,
+          "item11_criteria4": 1,
+          "item11_criteria5": 1,
+          "item11_criteria6": 1,
+          "item11_criteria7": 1,
+          "item11_criteria8": 1,
+          "item11_criteria9": 1,
+          "item11_criteria10": 1
+        },
+        "submittedAt": "2025-11-29T00:45:00.800Z"
+      }
+    ]
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "$2a$10$XOmI7ChvyEeblOAkjTpgfuhJY9Ldpuy5EJ.LEbu9NQishcoXiMDZS",
+    "role": "expert",
+    "delphiExpert": true,
+    "qualification": "PhD",
+    "experience": "10 years",
+    "expertise": "",
+    "institution": "",
+    "isAdmin": false,
+    "projectIds": [],
+    "createdAt": "2025-11-28T00:05:59.125Z"
+  },
+  {
+    "id": 2,
+    "name": "Admin",
+    "email": "admin@venu.com",
+    "password": "$2a$10$Wku8tluNM6dyoM/FMcttGu0no1Jm5wSjvIRTRg4mcLUSh98kAauq.",
+    "role": "admin",
+    "delphiExpert": false,
+    "qualification": "Administrator",
+    "experience": "Admin Access",
+    "expertise": "",
+    "institution": "",
+    "isAdmin": true,
+    "projectIds": [],
+    "createdAt": "2025-11-28T00:16:35.637Z"
+  },
+  {
+    "id": 3,
+    "name": "Sandev ubeysekara",
+    "email": "sandevubeysekara2003@gmail.com",
+    "password": "$2a$10$OSITPUiqSUa6fJoFLVzGIeQ.18xtJIcCZ4WSbFNlMfWHGUJlTi.2m",
+    "role": "expert",
+    "delphiExpert": true,
+    "qualification": "Phd",
+    "experience": "30 years",
+    "expertise": "marine engineering",
+    "institution": "",
+    "isAdmin": false,
+    "projectIds": [
+      4,
+      5,
+      6,
+      1
+    ],
+    "createdAt": "2025-11-28T01:39:26.720Z"
+  },
+  {
+    "id": 4,
+    "name": "Thiyu Ubeysekara",
+    "email": "thiyuubeysekara@gmail.com",
+    "password": "$2a$10$4NEiXjemqHjDxl6ivN5C5OLK4IjpKCrstaKQqzJOgSmj14.9v5shm",
+    "role": "expert",
+    "delphiExpert": true,
+    "qualification": "Phd",
+    "experience": "30 years",
+    "expertise": "marine engineering",
+    "institution": "",
+    "isAdmin": false,
+    "projectIds": [],
+    "createdAt": "2025-11-28T03:15:47.577Z"
+  }
+]
