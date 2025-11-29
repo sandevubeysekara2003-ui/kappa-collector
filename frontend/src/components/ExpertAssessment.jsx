@@ -24,6 +24,8 @@ function ExpertAssessment({ projectId, onBack }) {
   const [responses, setResponses] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -80,8 +82,13 @@ function ExpertAssessment({ projectId, onBack }) {
   useEffect(() => {
     // Fetch project details
     const fetchProject = async () => {
+      setIsLoading(true)
+      setError(null)
       try {
+        console.log('Fetching project from:', `${API_URL}/api/projects/${projectId}`)
         const res = await fetch(`${API_URL}/api/projects/${projectId}?t=${Date.now()}`)
+        console.log('Response status:', res.status)
+
         if (res.ok) {
           const data = await res.json()
           console.log('=== FETCHED PROJECT DATA ===')
@@ -90,11 +97,19 @@ function ExpertAssessment({ projectId, onBack }) {
           console.log('originalScaleItems:', data.originalScaleItems)
           console.log('Has originalScaleItems?', 'originalScaleItems' in data)
           setProject(data)
+          setIsLoading(false)
         } else {
+          const errorText = await res.text()
+          console.error('Error response:', errorText)
+          setError('Project not found')
           toast.error('Project not found')
+          setIsLoading(false)
         }
       } catch (err) {
-        toast.error('Failed to load project')
+        console.error('Fetch error:', err)
+        setError('Failed to load project. Please check your connection.')
+        toast.error('Failed to load project. Please check your connection.')
+        setIsLoading(false)
       }
     }
 
@@ -147,11 +162,43 @@ function ExpertAssessment({ projectId, onBack }) {
     }
   }
 
-  if (!project) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-blue-400 flex items-center justify-center">
         <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
-        <p style={{ fontFamily: 'monospace' }}>LOADING...</p>
+        <div className="text-center">
+          <div className="animate-pulse text-2xl mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+            ⟳ LOADING PROJECT...
+          </div>
+          <p className="text-sm text-blue-300" style={{ fontFamily: 'monospace' }}>
+            API: {API_URL}
+          </p>
+          <p className="text-sm text-blue-300" style={{ fontFamily: 'monospace' }}>
+            Project ID: {projectId}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !project) {
+    return (
+      <div className="min-h-screen bg-black text-red-400 flex items-center justify-center">
+        <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
+        <div className="bg-black bg-opacity-80 border-2 border-red-500 rounded-lg p-8 max-w-2xl text-center" style={{ boxShadow: '0 0 20px rgba(239, 68, 68, 0.5)' }}>
+          <h2 className="text-3xl font-bold text-red-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #EF4444' }}>
+            ⚠ ERROR
+          </h2>
+          <p className="text-red-300 mb-4" style={{ fontFamily: 'monospace' }}>
+            {error || 'Project not found'}
+          </p>
+          <p className="text-sm text-red-200 mb-2" style={{ fontFamily: 'monospace' }}>
+            API URL: {API_URL}
+          </p>
+          <p className="text-sm text-red-200" style={{ fontFamily: 'monospace' }}>
+            Project ID: {projectId}
+          </p>
+        </div>
       </div>
     )
   }
