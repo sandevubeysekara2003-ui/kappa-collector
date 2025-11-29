@@ -318,9 +318,371 @@ app.get('/api/test/project/:id', (req, res) => {
 	});
 });
 
+// ==================== SPECIFIC PROJECT ROUTES (MUST COME BEFORE /api/projects/:id) ====================
+
+// Get project by invite code (for expert registration)
+app.get('/api/projects/invite/:code', async (req, res) => {
+	try {
+		let project = null;
+		let type = null;
+
+		// Try to find by face validity code
+		project = db.projects.find(p => p.faceValidityCode === req.params.code);
+		if (project) type = 'face-validity';
+
+		// Try to find by delphi code
+		if (!project) {
+			project = db.projects.find(p => p.delphiCode === req.params.code);
+			if (project) type = 'delphi';
+		}
+
+		if (!project) {
+			return res.status(404).json({ error: 'Invalid invite code' });
+		}
+
+		res.json({ projectId: project.id, type });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Get aggregated expert responses for a project (admin only)
+app.get('/api/projects/:id/expert-responses', authMiddleware, async (req, res) => {
+	try {
+		const projectId = parseInt(req.params.id);
+		const project = db.projects.find(p => p.id === projectId);
+
+		if (!project) {
+			return res.status(404).json({ error: 'Project not found' });
+		}
+
+		if (project.adminId !== req.user.id) {
+			return res.status(403).json({ error: 'Access denied' });
+		}
+
+		res.json({
+			expertResponses: project.expertResponses || [],
+			translatedScaleItems: project.translatedScaleItems || []
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Update project scale items
+app.put('/api/projects/:id/items', authMiddleware, async (req, res) => {
+	try {
+		const projectId = parseInt(req.params.id);
+		const { originalScaleItems, translatedScaleItems } = req.body;
+
+		const project = db.projects.find(p => p.id === projectId);
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		if (project.adminId !== req.user.id) {
+			return res.status(403).json({ error: 'Access denied' });
+		}
+
+		if (originalScaleItems) project.originalScaleItems = originalScaleItems;
+		if (translatedScaleItems) project.translatedScaleItems = translatedScaleItems;
+
+		await saveProjects();
+		res.json({ project });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Submit face validity response
+app.post('/api/projects/:id/face/submit', authMiddleware, async (req, res) => {
+	try {
+		const { responses } = req.body;
+		const projectId = parseInt(req.params.id);
+
+		const project = db.projects.find(p => p.id === projectId);
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		if (!project.expertResponses) project.expertResponses = [];
+
+		project.expertResponses.push({
+			userId: req.user.id,
+			userName: req.user.name,
+			userEmail: req.user.email,
+			userQualification: req.user.qualification,
+			userYearsOfExperience: req.user.yearsOfExperience,
+			responses,
+			submittedAt: new Date().toISOString()
+		});
+
+		await saveProjects();
+		res.json({ message: 'Response submitted successfully' });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Submit delphi response
+app.post('/api/projects/:id/delphi/submit', authMiddleware, async (req, res) => {
+	try {
+		const { responses } = req.body;
+		const projectId = parseInt(req.params.id);
+
+		const project = db.projects.find(p => p.id === projectId);
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		if (!project.delphiResponses) project.delphiResponses = [];
+
+		project.delphiResponses.push({
+			userId: req.user.id,
+			userName: req.user.name,
+			userEmail: req.user.email,
+			userQualification: req.user.qualification,
+			userYearsOfExperience: req.user.yearsOfExperience,
+			responses,
+			submittedAt: new Date().toISOString()
+		});
+
+		await saveProjects();
+		res.json({ message: 'Response submitted successfully' });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Get project results (admin only)
+app.get('/api/projects/:id/face/results', authMiddleware, async (req, res) => {
+	try {
+		const projectId = parseInt(req.params.id);
+		const project = db.projects.find(p => p.id === projectId);
+
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		if (project.adminId !== req.user.id) {
+			return res.status(403).json({ error: 'Access denied' });
+		}
+
+		const expertResponses = project.expertResponses || [];
+		const translatedScaleItems = project.translatedScaleItems || [];
+
+		res.json({
+			expertResponses,
+			translatedScaleItems
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Get project scales endpoint
+app.get('/api/projects/:id/scales', authMiddleware, async (req, res) => {
+	try {
+		const projectId = parseInt(req.params.id);
+		const project = db.projects.find(p => p.id === projectId);
+
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		res.json({
+			originalScaleItems: project.originalScaleItems || [],
+			translatedScaleItems: project.translatedScaleItems || []
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+app.get('/api/projects/:id/delphi/results', authMiddleware, async (req, res) => {
+	try {
+		const projectId = parseInt(req.params.id);
+		const project = db.projects.find(p => p.id === projectId);
+
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		if (project.adminId !== req.user.id) {
+			return res.status(403).json({ error: 'Access denied' });
+		}
+
+		const delphiResponses = project.delphiResponses || [];
+		const translatedScaleItems = project.translatedScaleItems || [];
+
+		res.json({
+			delphiResponses,
+			translatedScaleItems
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Face analytics (admin only)
+app.get('/api/projects/:id/face/analytics', authMiddleware, async (req, res) => {
+	try {
+		const projectId = parseInt(req.params.id);
+		const project = db.projects.find(p => p.id === projectId);
+
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		if (project.adminId !== req.user.id) {
+			return res.status(403).json({ error: 'Access denied' });
+		}
+
+		const expertResponses = project.expertResponses || [];
+		const translatedScaleItems = project.translatedScaleItems || [];
+
+		const N = expertResponses.length;
+		const itemsCount = translatedScaleItems.length;
+
+		if (N === 0 || itemsCount === 0) {
+			return res.json({ submissionsCount: 0, itemsCount: 0, itemStats: [], pairwiseCorrelations: [], avgPairwiseCorrelation: null });
+		}
+
+		const itemStats = [];
+		for (let i = 0; i < itemsCount; i++) {
+			const criteriaStats = [];
+			for (let c = 1; c <= 10; c++) {
+				const key = `item${i}_criteria${c}`;
+				const vals = expertResponses.map(r => r.responses[key]).filter(v => v !== undefined);
+				const yesCount = vals.filter(v => v === 1).length;
+				const noCount = vals.filter(v => v === 0).length;
+				const total = vals.length;
+				const agreement = total > 0 ? ((yesCount / total) * 100).toFixed(1) : '0.0';
+				criteriaStats.push({ criteriaId: c, yesCount, noCount, total, agreement: parseFloat(agreement) });
+			}
+			itemStats.push({ itemIndex: i, criteriaStats });
+		}
+
+		const expertRatings = expertResponses.map(er => {
+			const ratings = [];
+			for (let i = 0; i < itemsCount; i++) {
+				for (let c = 1; c <= 10; c++) {
+					const key = `item${i}_criteria${c}`;
+					ratings.push(er.responses[key] !== undefined ? er.responses[key] : NaN);
+				}
+			}
+			return { userName: er.userName, ratings };
+		});
+
+		const pairCorrs = [];
+		for (let i = 0; i < N; i++) {
+			for (let j = i + 1; j < N; j++) {
+				const a = expertRatings[i].ratings;
+				const b = expertRatings[j].ratings;
+				const valid = [];
+				for (let k = 0; k < a.length; k++) {
+					if (!Number.isNaN(a[k]) && !Number.isNaN(b[k])) valid.push([a[k], b[k]]);
+				}
+				if (valid.length < 2) continue;
+				const ax = valid.map(v=>v[0]);
+				const bx = valid.map(v=>v[1]);
+				const meanA = ax.reduce((s,v)=>s+v,0)/ax.length;
+				const meanB = bx.reduce((s,v)=>s+v,0)/bx.length;
+				let num = 0, denA = 0, denB = 0;
+				for (let k = 0; k < ax.length; k++) {
+					num += (ax[k]-meanA)*(bx[k]-meanB);
+					denA += Math.pow(ax[k]-meanA,2);
+					denB += Math.pow(bx[k]-meanB,2);
+				}
+				const corr = num / Math.sqrt(denA * denB) || 0;
+				pairCorrs.push({ a: expertRatings[i].userName, b: expertRatings[j].userName, corr });
+			}
+		}
+		const avgCorr = pairCorrs.length ? (pairCorrs.reduce((s,p)=>s+(p.corr||0),0)/pairCorrs.length) : null;
+
+		res.json({ submissionsCount: N, itemsCount, itemStats, pairwiseCorrelations: pairCorrs, avgPairwiseCorrelation: avgCorr });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// Delphi analytics (admin only)
+app.get('/api/projects/:id/delphi/analytics', authMiddleware, async (req, res) => {
+	try {
+		const projectId = parseInt(req.params.id);
+		const project = db.projects.find(p => p.id === projectId);
+
+		if (!project) return res.status(404).json({ error: 'Project not found' });
+
+		if (project.adminId !== req.user.id) {
+			return res.status(403).json({ error: 'Access denied' });
+		}
+
+		const delphiResponses = project.delphiResponses || [];
+		const translatedScaleItems = project.translatedScaleItems || [];
+
+		const N = delphiResponses.length;
+		const itemsCount = translatedScaleItems.length;
+
+		if (N === 0 || itemsCount === 0) {
+			return res.json({ submissionsCount: 0, itemsCount: 0, itemStats: [], pairwiseCorrelations: [], avgPairwiseCorrelation: null });
+		}
+
+		const itemStats = [];
+		for (let i = 0; i < itemsCount; i++) {
+			const key = `item${i}`;
+			const vals = delphiResponses.map(r => r.responses[key]).filter(v => v !== undefined && v !== null);
+			const ratings = vals.map(v => parseInt(v));
+			const mean = ratings.length > 0 ? (ratings.reduce((s,v)=>s+v,0)/ratings.length).toFixed(2) : '0.00';
+			const counts = { 1:0, 2:0, 3:0, 4:0, 5:0 };
+			ratings.forEach(r => { if (counts[r] !== undefined) counts[r]++; });
+			itemStats.push({ itemIndex: i, mean: parseFloat(mean), counts, total: ratings.length });
+		}
+
+		const expertRatings = delphiResponses.map(dr => {
+			const ratings = [];
+			for (let i = 0; i < itemsCount; i++) {
+				const key = `item${i}`;
+				const val = dr.responses[key];
+				ratings.push(val !== undefined && val !== null ? parseInt(val) : NaN);
+			}
+			return { userName: dr.userName, ratings };
+		});
+
+		const pairCorrs = [];
+		for (let i = 0; i < N; i++) {
+			for (let j = i + 1; j < N; j++) {
+				const a = expertRatings[i].ratings;
+				const b = expertRatings[j].ratings;
+				const valid = [];
+				for (let k = 0; k < a.length; k++) {
+					if (!Number.isNaN(a[k]) && !Number.isNaN(b[k])) valid.push([a[k], b[k]]);
+				}
+				if (valid.length < 2) continue;
+				const ax = valid.map(v=>v[0]);
+				const bx = valid.map(v=>v[1]);
+				const meanA = ax.reduce((s,v)=>s+v,0)/ax.length;
+				const meanB = bx.reduce((s,v)=>s+v,0)/bx.length;
+				let num = 0, denA = 0, denB = 0;
+				for (let k = 0; k < ax.length; k++) {
+					num += (ax[k]-meanA)*(bx[k]-meanB);
+					denA += Math.pow(ax[k]-meanA,2);
+					denB += Math.pow(bx[k]-meanB,2);
+				}
+				const corr = num / Math.sqrt(denA * denB) || 0;
+				pairCorrs.push({ a: expertRatings[i].userName, b: expertRatings[j].userName, corr });
+			}
+		}
+		const avgCorr = pairCorrs.length ? (pairCorrs.reduce((s,p)=>s+(p.corr||0),0)/pairCorrs.length) : null;
+
+		res.json({ submissionsCount: N, itemsCount, itemStats, pairwiseCorrelations: pairCorrs, avgPairwiseCorrelation: avgCorr });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ error: 'Server error' });
+	}
+});
+
+// ==================== GENERAL PROJECT ROUTE (MUST COME LAST) ====================
+
 // Get specific project (public - for experts)
 app.get('/api/projects/:id', async (req, res) => {
 	try {
+		console.log('=== PUBLIC PROJECT ENDPOINT ===');
 		console.log('Looking for project ID:', req.params.id);
 		console.log('Total projects in DB:', db.projects.length);
 		console.log('All project IDs:', db.projects.map(p => p.id));
@@ -334,6 +696,8 @@ app.get('/api/projects/:id', async (req, res) => {
 				availableIds: db.projects.map(p => p.id)
 			});
 		}
+
+		console.log('Project found:', project.name);
 
 		// Return necessary fields for experts (both scales for display, but only translated for evaluation)
 		res.json({
@@ -428,173 +792,7 @@ app.post('/api/expert-response/:projectId', async (req, res) => {
 	}
 });
 
-// Get aggregated expert responses for a project (admin only)
-app.get('/api/projects/:id/expert-responses', authMiddleware, async (req, res) => {
-	try {
-		const projectId = parseInt(req.params.id);
-		const project = db.projects.find(p => p.id === projectId);
-
-		if (!project) {
-			return res.status(404).json({ error: 'Project not found' });
-		}
-
-		if (project.adminId !== req.user.id) {
-			return res.status(403).json({ error: 'Access denied' });
-		}
-
-		res.json({
-			expertResponses: project.expertResponses || [],
-			translatedScaleItems: project.translatedScaleItems || []
-		});
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
-	}
-});
-
-// Get project by invite code (for expert registration)
-app.get('/api/projects/invite/:code', async (req, res) => {
-	try {
-		let project = null;
-		let type = null;
-
-		// Search in face validations
-		project = db.projects.find(p => p.face.inviteCode === req.params.code);
-		if (project) {
-			type = 'face';
-			return res.json({ project, type });
-		}
-
-		// Search in delphi validations
-		project = db.projects.find(p => p.delphi.inviteCode === req.params.code);
-		if (project) {
-			type = 'delphi';
-			return res.json({ project, type });
-		}
-
-		res.status(404).json({ error: 'Invalid invite code' });
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
-	}
-});
-
-// Update project scale items
-app.put('/api/projects/:id/items', authMiddleware, async (req, res) => {
-	try {
-		const projectId = parseInt(req.params.id);
-		const { originalScaleItems, translatedScaleItems } = req.body;
-
-		const project = db.projects.find(p => p.id === projectId);
-
-		if (!project) {
-			return res.status(404).json({ error: 'Project not found' });
-		}
-
-		// Check if user is admin
-		if (project.adminId !== req.user.id) {
-			return res.status(403).json({ error: 'Only project admin can update items' });
-		}
-
-		// Update items
-		if (originalScaleItems !== undefined) {
-			project.originalScaleItems = originalScaleItems;
-		}
-		if (translatedScaleItems !== undefined) {
-			project.translatedScaleItems = translatedScaleItems;
-		}
-
-		await saveProjects();
-
-		res.json({
-			success: true,
-			originalScaleItems: project.originalScaleItems,
-			translatedScaleItems: project.translatedScaleItems
-		});
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
-	}
-});
-
-// Submit face validity response
-app.post('/api/projects/:id/face/submit', authMiddleware, async (req, res) => {
-	try {
-		const { responses } = req.body;
-		const projectId = parseInt(req.params.id);
-		
-		const project = db.projects.find(p => p.id === projectId);
-		if (!project) return res.status(404).json({ error: 'Project not found' });
-		
-		if (!project.face.experts.includes(req.user.id)) {
-			return res.status(403).json({ error: 'Not an expert for this validation' });
-		}
-
-		// Add submission
-		const submission = {
-			userId: req.user.id,
-			userName: req.user.name,
-			userEmail: req.user.email,
-			responses,
-			submittedAt: new Date().toISOString()
-		};
-
-		project.face.submissions.push(submission);
-		await saveProjects();
-
-		res.json({ message: 'Face validity submission saved' });
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
-	}
-});
-
-// Submit delphi response
-app.post('/api/projects/:id/delphi/submit', authMiddleware, async (req, res) => {
-	try {
-		const { responses } = req.body;
-		const projectId = parseInt(req.params.id);
-		
-		const project = db.projects.find(p => p.id === projectId);
-		if (!project) return res.status(404).json({ error: 'Project not found' });
-		
-		if (!project.delphi.experts.includes(req.user.id)) {
-			return res.status(403).json({ error: 'Not an expert for this validation' });
-		}
-
-		const submission = {
-			userId: req.user.id,
-			userName: req.user.name,
-			userEmail: req.user.email,
-			responses,
-			submittedAt: new Date().toISOString()
-		};
-
-		project.delphi.submissions.push(submission);
-		await saveProjects();
-
-		res.json({ message: 'Delphi submission saved' });
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
-	}
-});
-
-// Get project results (admin only)
-app.get('/api/projects/:id/face/results', authMiddleware, async (req, res) => {
-	try {
-		const projectId = parseInt(req.params.id);
-		const project = db.projects.find(p => p.id === projectId);
-		
-		if (!project) return res.status(404).json({ error: 'Project not found' });
-		if (project.adminId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
-
-		res.json({ submissions: project.face.submissions });
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
-	}
-});
+// ==================== CONTINUE WITH OTHER ENDPOINTS ====================
 
 // Parse document endpoint
 app.post('/api/documents/parse', authMiddleware, async (req, res) => {
@@ -661,40 +859,6 @@ app.post('/api/documents/parse', authMiddleware, async (req, res) => {
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ error: 'Server error during parsing' });
-	}
-});
-
-// Get project scales endpoint
-app.get('/api/projects/:id/scales', authMiddleware, async (req, res) => {
-	try {
-		const projectId = parseInt(req.params.id);
-		const project = db.projects.find(p => p.id === projectId);
-
-		if (!project) return res.status(404).json({ error: 'Project not found' });
-		if (project.adminId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
-
-		res.json({
-			originalScale: project.originalScale || null,
-			translatedScale: project.translatedScale || null
-		});
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
-	}
-});
-
-app.get('/api/projects/:id/delphi/results', authMiddleware, async (req, res) => {
-	try {
-		const projectId = parseInt(req.params.id);
-		const project = db.projects.find(p => p.id === projectId);
-		
-		if (!project) return res.status(404).json({ error: 'Project not found' });
-		if (project.adminId !== req.user.id) return res.status(403).json({ error: 'Access denied' });
-
-		res.json({ submissions: project.delphi.submissions });
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
 	}
 });
 
