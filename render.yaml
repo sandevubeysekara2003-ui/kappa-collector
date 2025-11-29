@@ -29,5 +29,5 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://kappa-collector.onrender.com
+        value: https://kappa-collect-or.onrender.com
 

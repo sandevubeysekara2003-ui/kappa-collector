@@ -3,6 +3,6 @@
 // In development, use localhost
 export const API_URL = import.meta.env.VITE_API_URL ||
   (import.meta.env.MODE === 'production'
-    ? 'https://kappa-collector.onrender.com'
+    ? 'https://kappa-collect-or.onrender.com'
     : 'http://localhost:4000')
 
