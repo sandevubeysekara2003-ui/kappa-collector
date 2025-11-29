@@ -304,7 +304,17 @@ app.get('/api/debug/db-status', (req, res) => {
 		projectIds: db.projects.map(p => ({ id: p.id, name: p.name })),
 		dbDir: DB_DIR,
 		projectsFile: PROJECTS_FILE,
-		usersFile: USERS_FILE
+		usersFile: USERS_FILE,
+		codeVersion: '2024-01-29-v2'
+	});
+});
+
+// Test endpoint to verify routing
+app.get('/api/test/project/:id', (req, res) => {
+	res.json({
+		message: 'Test route working',
+		receivedId: req.params.id,
+		parsedId: parseInt(req.params.id)
 	});
 });
 
