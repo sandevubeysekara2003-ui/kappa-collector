@@ -64,23 +64,37 @@ let db = {
 // Load database
 async function loadDatabase() {
 	try {
+		console.log('=== LOADING DATABASE ===');
+		console.log('DB_DIR:', DB_DIR);
+		console.log('USERS_FILE:', USERS_FILE);
+		console.log('PROJECTS_FILE:', PROJECTS_FILE);
+
 		await fs.mkdir(DB_DIR, { recursive: true });
-		
+		console.log('✓ Data directory created/verified');
+
 		try {
 			const usersData = await fs.readFile(USERS_FILE, 'utf8');
 			db.users = JSON.parse(usersData);
+			console.log(`✓ Loaded ${db.users.length} users`);
 		} catch (err) {
+			console.log('⚠ No users file found, starting with empty users array');
 			db.users = [];
 		}
 
 		try {
 			const projectsData = await fs.readFile(PROJECTS_FILE, 'utf8');
 			db.projects = JSON.parse(projectsData);
+			console.log(`✓ Loaded ${db.projects.length} projects`);
+			if (db.projects.length > 0) {
+				console.log('Projects:', db.projects.map(p => ({ id: p.id, name: p.name, type: p.type })));
+			}
 		} catch (err) {
+			console.log('⚠ No projects file found, starting with empty projects array');
 			db.projects = [];
 		}
 
 		console.log('✓ Database loaded successfully');
+		console.log(`Total: ${db.users.length} users, ${db.projects.length} projects`);
 	} catch (err) {
 		console.error('✗ Error loading database:', err);
 	}
@@ -709,34 +723,50 @@ app.get('/api/projects/:id/delphi/analytics', authMiddleware, async (req, res) =
 app.get('/api/projects/:id', async (req, res) => {
 	try {
 		console.log('=== PUBLIC PROJECT ENDPOINT ===');
+		console.log('Request URL:', req.url);
+		console.log('Request method:', req.method);
+		console.log('Request params:', req.params);
 		console.log('Looking for project ID:', req.params.id);
 		console.log('Total projects in DB:', db.projects.length);
-		console.log('All project IDs:', db.projects.map(p => p.id));
+		console.log('All project IDs:', db.projects.map(p => ({ id: p.id, name: p.name })));
 
-		const project = db.projects.find(p => p.id === parseInt(req.params.id));
+		const projectId = parseInt(req.params.id);
+		console.log('Parsed project ID:', projectId);
+
+		const project = db.projects.find(p => p.id === projectId);
+
 		if (!project) {
-			console.log('Project not found!');
+			console.log('❌ Project not found!');
+			console.log('Available projects:', db.projects.map(p => ({ id: p.id, name: p.name })));
 			return res.status(404).json({
 				error: 'Project not found',
-				requestedId: parseInt(req.params.id),
-				availableIds: db.projects.map(p => p.id)
+				requestedId: projectId,
+				availableIds: db.projects.map(p => p.id),
+				totalProjects: db.projects.length
 			});
 		}
 
-		console.log('Project found:', project.name);
+		console.log('✅ Project found:', project.name);
+		console.log('Project type:', project.type);
+		console.log('Original items count:', project.originalScaleItems?.length || 0);
+		console.log('Translated items count:', project.translatedScaleItems?.length || 0);
 
 		// Return necessary fields for experts (both scales for display, but only translated for evaluation)
-		res.json({
+		const response = {
 			id: project.id,
 			name: project.name,
 			description: project.description,
 			type: project.type,
 			originalScaleItems: project.originalScaleItems || [],
 			translatedScaleItems: project.translatedScaleItems || []
-		});
+		};
+
+		console.log('Sending response with', response.originalScaleItems.length, 'original items and', response.translatedScaleItems.length, 'translated items');
+
+		res.json(response);
 	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
+		console.error('❌ Error in /api/projects/:id:', err);
+		res.status(500).json({ error: 'Server error', message: err.message });
 	}
 });
 
