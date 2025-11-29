@@ -296,11 +296,34 @@ app.get('/api/projects', authMiddleware, async (req, res) => {
 	}
 });
 
+// Debug endpoint to check database status
+app.get('/api/debug/db-status', (req, res) => {
+	res.json({
+		totalProjects: db.projects.length,
+		totalUsers: db.users.length,
+		projectIds: db.projects.map(p => ({ id: p.id, name: p.name })),
+		dbDir: DB_DIR,
+		projectsFile: PROJECTS_FILE,
+		usersFile: USERS_FILE
+	});
+});
+
 // Get specific project (public - for experts)
 app.get('/api/projects/:id', async (req, res) => {
 	try {
+		console.log('Looking for project ID:', req.params.id);
+		console.log('Total projects in DB:', db.projects.length);
+		console.log('All project IDs:', db.projects.map(p => p.id));
+
 		const project = db.projects.find(p => p.id === parseInt(req.params.id));
-		if (!project) return res.status(404).json({ error: 'Project not found' });
+		if (!project) {
+			console.log('Project not found!');
+			return res.status(404).json({
+				error: 'Project not found',
+				requestedId: parseInt(req.params.id),
+				availableIds: db.projects.map(p => p.id)
+			});
+		}
 
 		// Return necessary fields for experts (both scales for display, but only translated for evaluation)
 		res.json({
