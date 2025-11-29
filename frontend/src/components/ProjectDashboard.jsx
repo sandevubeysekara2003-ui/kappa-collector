@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, AlignmentType, WidthType, BorderStyle, HeadingLevel } from 'docx'
 import { saveAs } from 'file-saver'
+import { API_URL } from '../config'
 
 const FACE_VALIDITY_CRITERIA = [
   { id: 1, text: 'Appropriateness of grammar.' },
@@ -47,7 +48,7 @@ function ProjectDashboard({ project, user, onBack }) {
       const fetchExpertResponses = async () => {
         try {
           const token = localStorage.getItem('token')
-          const res = await fetch(`http://localhost:4000/api/projects/${project.id}/expert-responses`, {
+          const res = await fetch(`${API_URL}/api/projects/${project.id}/expert-responses`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -69,7 +70,7 @@ function ProjectDashboard({ project, user, onBack }) {
     const saveItems = async () => {
       try {
         const token = localStorage.getItem('token')
-        await fetch(`http://localhost:4000/api/projects/${project.id}/items`, {
+        await fetch(`${API_URL}/api/projects/${project.id}/items`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -617,7 +618,7 @@ function ProjectDashboard({ project, user, onBack }) {
     setIsUploadingOriginal(true)
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:4000/api/parse-document', {
+      const res = await fetch(`${API_URL}/api/parse-document`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -655,7 +656,7 @@ function ProjectDashboard({ project, user, onBack }) {
     setIsUploadingTranslated(true)
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:4000/api/parse-document', {
+      const res = await fetch(`${API_URL}/api/parse-document`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

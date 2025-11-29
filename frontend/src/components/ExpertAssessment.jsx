@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
+import { API_URL } from '../config'
 
 const FACE_VALIDITY_CRITERIA = [
   { id: 1, text: 'Appropriateness of grammar.' },
@@ -80,7 +81,7 @@ function ExpertAssessment({ projectId, onBack }) {
     // Fetch project details
     const fetchProject = async () => {
       try {
-        const res = await fetch(`http://localhost:4000/api/projects/${projectId}?t=${Date.now()}`)
+        const res = await fetch(`${API_URL}/api/projects/${projectId}?t=${Date.now()}`)
         if (res.ok) {
           const data = await res.json()
           console.log('=== FETCHED PROJECT DATA ===')
@@ -118,7 +119,7 @@ function ExpertAssessment({ projectId, onBack }) {
 
     setIsSubmitting(true)
     try {
-      const res = await fetch(`http://localhost:4000/api/expert-response/${projectId}`, {
+      const res = await fetch(`${API_URL}/api/expert-response/${projectId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

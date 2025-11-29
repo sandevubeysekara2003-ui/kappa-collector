@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
+import { API_URL } from '../config'
 
 function HomePage({ user, onLogout, onProjectSelect }) {
   const [projects, setProjects] = useState([])
@@ -68,7 +69,7 @@ function HomePage({ user, onLogout, onProjectSelect }) {
   const fetchProjects = async () => {
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:4000/api/projects', {
+      const res = await fetch(`${API_URL}/api/projects`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
@@ -90,7 +91,7 @@ function HomePage({ user, onLogout, onProjectSelect }) {
 
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('http://localhost:4000/api/projects', {
+      const res = await fetch(`${API_URL}/api/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +129,7 @@ function HomePage({ user, onLogout, onProjectSelect }) {
 
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch(`http://localhost:4000/api/projects/${projectId}`, {
+      const res = await fetch(`${API_URL}/api/projects/${projectId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

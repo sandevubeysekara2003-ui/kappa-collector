@@ -6,6 +6,7 @@ import RegisterPage from './components/RegisterPage'
 import HomePage from './components/HomePage'
 import ProjectDashboard from './components/ProjectDashboard'
 import ExpertAssessment from './components/ExpertAssessment'
+import { API_URL } from './config'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('login')
@@ -33,7 +34,7 @@ function App() {
 
   const fetchUserData = async (token) => {
     try {
-      const res = await fetch('http://localhost:4000/api/me', {
+      const res = await fetch(`${API_URL}/api/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {

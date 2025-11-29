@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
+import { API_URL } from '../config'
 
 function RegisterPage({ onRegister, onSwitchToLogin }) {
   const [name, setName] = useState('')
@@ -70,7 +71,7 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
 
     setIsLoading(true)
     try {
-      const res = await fetch('http://localhost:4000/api/auth/register', {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
