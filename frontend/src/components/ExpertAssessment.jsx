@@ -79,7 +79,7 @@ function ExpertAssessment({ projectId, onBack }) {
       setIsLoading(true)
       setError(null)
 
-      const apiUrl = 'https://kappa-collect-or.onrender.com'
+      const apiUrl = 'https://kappa-collector.onrender.com'
       const fullUrl = `${apiUrl}/api/projects/${projectId}`
 
       console.log('=== FETCHING PROJECT ===')
@@ -134,7 +134,7 @@ function ExpertAssessment({ projectId, onBack }) {
     setIsSubmitting(true)
 
     try {
-      const res = await fetch(`https://kappa-collect-or.onrender.com/api/expert-response/${projectId}`, {
+      const res = await fetch(`https://kappa-collector.onrender.com/api/expert-response/${projectId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
