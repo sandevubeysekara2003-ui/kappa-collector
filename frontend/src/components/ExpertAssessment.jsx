@@ -73,25 +73,34 @@ function ExpertAssessment({ projectId }) {
   useEffect(() => {
     const fetchProject = async () => {
       if (!projectId) {
+        console.error('❌ No project ID provided')
         setError('No project ID provided')
         setIsLoading(false)
         return
       }
 
       try {
+        console.log('=== EXPERT ASSESSMENT DEBUG ===')
         console.log('🔄 Fetching project:', projectId)
         console.log('API URL:', API_URL)
+        console.log('Environment Mode:', import.meta.env.MODE)
+        console.log('VITE_API_URL:', import.meta.env.VITE_API_URL)
+        console.log('Full fetch URL:', `${API_URL}/api/projects/${projectId}`)
 
         const response = await fetch(`${API_URL}/api/projects/${projectId}`)
 
         console.log('Response status:', response.status)
+        console.log('Response ok:', response.ok)
 
         if (!response.ok) {
+          const errorText = await response.text()
+          console.error('❌ Response error:', errorText)
           throw new Error(`Failed to load project (Status: ${response.status})`)
         }
 
         const data = await response.json()
-        console.log('✅ Project loaded:', data.name)
+        console.log('✅ Project loaded successfully!')
+        console.log('Project name:', data.name)
         console.log('Original items:', data.originalScaleItems?.length)
         console.log('Translated items:', data.translatedScaleItems?.length)
 
@@ -99,6 +108,8 @@ function ExpertAssessment({ projectId }) {
         setError(null)
       } catch (err) {
         console.error('❌ Error loading project:', err)
+        console.error('Error message:', err.message)
+        console.error('Error stack:', err.stack)
         setError(err.message)
       } finally {
         setIsLoading(false)
