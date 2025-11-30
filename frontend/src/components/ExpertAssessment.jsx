@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 
 const FACE_VALIDITY_CRITERIA = [
@@ -27,6 +27,7 @@ function ExpertAssessment({ projectId, onBack }) {
   const [error, setError] = useState(null)
   const canvasRef = useRef(null)
 
+  // Canvas animation
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -38,11 +39,7 @@ function ExpertAssessment({ projectId, onBack }) {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;:,.<>?'
     const fontSize = 16
     const columns = canvas.width / fontSize
-    const drops = []
-
-    for (let i = 0; i < columns; i++) {
-      drops[i] = Math.random() * -100
-    }
+    const drops = Array.from({ length: columns }, () => Math.random() * -100)
 
     const draw = () => {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'
@@ -52,14 +49,11 @@ function ExpertAssessment({ projectId, onBack }) {
       ctx.shadowColor = '#1E90FF'
       ctx.font = fontSize + 'px monospace'
 
-      for (let i = 0; i < drops.length; i++) {
+      drops.forEach((y, i) => {
         const text = letters[Math.floor(Math.random() * letters.length)]
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize)
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0
-        }
-        drops[i]++
-      }
+        ctx.fillText(text, i * fontSize, y * fontSize)
+        drops[i] = (y * fontSize > canvas.height && Math.random() > 0.975) ? 0 : y + 1
+      })
     }
 
     const interval = setInterval(draw, 33)
@@ -74,47 +68,49 @@ function ExpertAssessment({ projectId, onBack }) {
     }
   }, [])
 
+  // Fetch project data
   useEffect(() => {
     const fetchProject = async () => {
+      if (!projectId) {
+        setError('No project ID provided')
+        setIsLoading(false)
+        return
+      }
+
       setIsLoading(true)
       setError(null)
 
       const apiUrl = 'https://kappa-collector.onrender.com'
       const fullUrl = `${apiUrl}/api/projects/${projectId}`
 
-      console.log('=== FETCHING PROJECT ===')
-      console.log('URL:', fullUrl)
-      console.log('Project ID:', projectId)
+      console.log('Fetching project ID:', projectId)
+      console.log('Full URL:', fullUrl)
 
       try {
         const res = await fetch(fullUrl)
-        console.log('Status:', res.status)
-
         if (res.ok) {
           const data = await res.json()
-          console.log('Project loaded:', data.name)
           setProject(data)
         } else {
-          setError(`Failed to load project (Status: ${res.status})`)
+          setError(`Project not found (Status: ${res.status})`)
         }
       } catch (err) {
-        console.error('Fetch error:', err)
         setError(`Network error: ${err.message}`)
       } finally {
         setIsLoading(false)
       }
     }
 
-    if (projectId) {
-      fetchProject()
-    }
+    fetchProject()
   }, [projectId])
 
+  // Handle radio change (store as string to match input value)
   const handleResponseChange = (itemIndex, criteriaId, value) => {
     const key = `item${itemIndex}_criteria${criteriaId}`
     setResponses(prev => ({ ...prev, [key]: value }))
   }
 
+  // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -123,7 +119,7 @@ function ExpertAssessment({ projectId, onBack }) {
       return
     }
 
-    const totalResponses = project.translatedScaleItems.length * 10
+    const totalResponses = project.translatedScaleItems.length * FACE_VALIDITY_CRITERIA.length
     const filledResponses = Object.keys(responses).length
 
     if (filledResponses < totalResponses) {
@@ -160,6 +156,7 @@ function ExpertAssessment({ projectId, onBack }) {
     }
   }
 
+  // Loading screen
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-blue-400 flex items-center justify-center">
@@ -176,11 +173,12 @@ function ExpertAssessment({ projectId, onBack }) {
     )
   }
 
+  // Error screen
   if (error || !project) {
     return (
       <div className="min-h-screen bg-black text-red-400 flex items-center justify-center">
         <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
-        <div className="bg-black bg-opacity-80 border-2 border-red-500 rounded-lg p-8 max-w-2xl text-center" style={{ boxShadow: '0 0 20px rgba(239, 68, 68, 0.5)' }}>
+        <div className="bg-black bg-opacity-80 border-2 border-red-500 rounded-lg p-8 max-w-2xl text-center">
           <h2 className="text-3xl font-bold text-red-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #EF4444' }}>
             ⚠ ERROR
           </h2>
@@ -195,11 +193,12 @@ function ExpertAssessment({ projectId, onBack }) {
     )
   }
 
+  // Submission screen
   if (hasSubmitted) {
     return (
       <div className="min-h-screen bg-black text-blue-400 flex items-center justify-center">
         <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
-        <div className="bg-black bg-opacity-80 border-2 border-green-500 rounded-lg p-8 max-w-2xl" style={{ boxShadow: '0 0 20px rgba(34, 197, 94, 0.5)' }}>
+        <div className="bg-black bg-opacity-80 border-2 border-green-500 rounded-lg p-8 max-w-2xl">
           <h2 className="text-3xl font-bold text-green-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #22C55E' }}>
             ✓ RESPONSE SUBMITTED
           </h2>
@@ -211,40 +210,31 @@ function ExpertAssessment({ projectId, onBack }) {
     )
   }
 
+  // Main form
   return (
     <div className="min-h-screen bg-black text-blue-400 p-8">
       <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-8 mb-8" style={{ boxShadow: '0 0 20px rgba(30, 144, 255, 0.5)' }}>
-          <h1 className="text-4xl font-bold text-center mb-2" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #1E90FF' }}>
-            KAPPA COLLECTOR
+        {/* Header */}
+        <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6 mb-8">
+          <h1 className="text-3xl font-bold text-blue-400 mb-2" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+            EXPERT ASSESSMENT FORM
           </h1>
-          <p className="text-center text-blue-300 mb-6" style={{ fontFamily: 'monospace' }}>
-            Face Validity Expert Assessment
+          <p className="text-blue-300" style={{ fontFamily: 'monospace' }}>
+            Project: {project.name}
           </p>
-
-          <div className="border-t border-blue-500 pt-6">
-            <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
-              {project.name}
-            </h2>
-            <p className="text-blue-300 mb-4" style={{ fontFamily: 'monospace' }}>
-              {project.description}
-            </p>
-          </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-8 mb-8" style={{ boxShadow: '0 0 20px rgba(30, 144, 255, 0.5)' }}>
-            <h3 className="text-2xl font-bold mb-6" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
-              Expert Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Expert Information */}
+          <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+              EXPERT INFORMATION
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>
-                  Full Name *
-                </label>
+                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Name *</label>
                 <input
                   type="text"
                   value={expertName}
@@ -254,11 +244,8 @@ function ExpertAssessment({ projectId, onBack }) {
                   required
                 />
               </div>
-
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>
-                  Email *
-                </label>
+                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Email *</label>
                 <input
                   type="email"
                   value={expertEmail}
@@ -268,11 +255,8 @@ function ExpertAssessment({ projectId, onBack }) {
                   required
                 />
               </div>
-
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>
-                  Qualification *
-                </label>
+                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Qualification *</label>
                 <input
                   type="text"
                   value={expertQualification}
@@ -282,11 +266,8 @@ function ExpertAssessment({ projectId, onBack }) {
                   required
                 />
               </div>
-
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>
-                  Years of Experience *
-                </label>
+                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Years of Experience *</label>
                 <input
                   type="number"
                   value={expertYearsOfExperience}
@@ -294,138 +275,156 @@ function ExpertAssessment({ projectId, onBack }) {
                   className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-blue-400 focus:outline-none focus:border-blue-300"
                   style={{ fontFamily: 'monospace' }}
                   required
-                  min="0"
                 />
               </div>
             </div>
           </div>
 
-          {project.type === 'face-validity' && (
-            <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-8 mb-8" style={{ boxShadow: '0 0 20px rgba(30, 144, 255, 0.5)' }}>
-              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
-                Instructions
-              </h3>
-              <div className="text-blue-300 space-y-2" style={{ fontFamily: 'monospace' }}>
-                <p>• Please review both the Original Scale (English) and Translated Scale items below.</p>
-                <p>• Evaluate each translated item against the 10 Face Validity criteria.</p>
-                <p>• Select YES if the item meets the criterion, NO if it does not.</p>
-                <p>• All evaluations must be completed before submission.</p>
-              </div>
-            </div>
-          )}
+          {/* Instructions */}
+          <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+              INSTRUCTIONS
+            </h2>
+            <p className="text-blue-300 mb-4" style={{ fontFamily: 'monospace' }}>
+              Please evaluate each translated item against the 10 face validity criteria listed below.
+              For each item-criteria combination, select YES or NO.
+            </p>
+          </div>
 
-          <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-8 mb-8" style={{ boxShadow: '0 0 20px rgba(30, 144, 255, 0.5)' }}>
-            <h3 className="text-2xl font-bold mb-6" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
-              Scale Items
-            </h3>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div>
-                <h4 className="text-xl font-bold mb-4 text-green-400" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #22C55E' }}>
-                  Original Scale (English)
-                </h4>
-                <div className="space-y-3">
-                  {project.originalScaleItems && project.originalScaleItems.map((item, index) => (
-                    <div key={item.id} className="bg-black border border-green-500 rounded p-3">
-                      <span className="text-green-400 font-bold" style={{ fontFamily: 'monospace' }}>
-                        Item {index + 1}:
-                      </span>
-                      <span className="text-green-300 ml-2" style={{ fontFamily: 'monospace' }}>
-                        {item.text}
-                      </span>
-                    </div>
+          {/* Original Scale Items */}
+          <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+              ORIGINAL SCALE (English)
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-blue-500">
+                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Item #</th>
+                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Text</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {project.originalScaleItems.map((item, idx) => (
+                    <tr key={item.id} className="border-b border-blue-700">
+                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{idx + 1}</td>
+                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{item.text}</td>
+                    </tr>
                   ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-xl font-bold mb-4 text-yellow-400" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #FBBF24' }}>
-                  Translated Scale
-                </h4>
-                <div className="space-y-3">
-                  {project.translatedScaleItems && project.translatedScaleItems.map((item, index) => (
-                    <div key={item.id} className="bg-black border border-yellow-500 rounded p-3">
-                      <span className="text-yellow-400 font-bold" style={{ fontFamily: 'monospace' }}>
-                        Item {index + 1}:
-                      </span>
-                      <span className="text-yellow-300 ml-2" style={{ fontFamily: 'monospace' }}>
-                        {item.text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {project.type === 'face-validity' && (
-            <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-8 mb-8" style={{ boxShadow: '0 0 20px rgba(30, 144, 255, 0.5)' }}>
-              <h3 className="text-2xl font-bold mb-6" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
-                Face Validity Evaluation
-              </h3>
-
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="border-2 border-blue-500 bg-blue-900 bg-opacity-50 p-3 text-left" style={{ fontFamily: 'monospace' }}>
-                        Criteria
-                      </th>
-                      {project.translatedScaleItems && project.translatedScaleItems.map((_, index) => (
-                        <th key={index} className="border-2 border-blue-500 bg-blue-900 bg-opacity-50 p-3 text-center" style={{ fontFamily: 'monospace' }}>
-                          Item {index + 1}
-                        </th>
-                      ))}
+          {/* Translated Scale Items */}
+          <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+              TRANSLATED SCALE (Sinhala)
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-blue-500">
+                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Item #</th>
+                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Text</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {project.translatedScaleItems.map((item, idx) => (
+                    <tr key={item.id} className="border-b border-blue-700">
+                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{idx + 1}</td>
+                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{item.text}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {FACE_VALIDITY_CRITERIA.map((criteria) => (
-                      <tr key={criteria.id}>
-                        <td className="border-2 border-blue-500 p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>
-                          <span className="font-bold text-blue-400">C{criteria.id}:</span> {criteria.text}
-                        </td>
-                        {project.translatedScaleItems && project.translatedScaleItems.map((_, itemIndex) => (
-                          <td key={itemIndex} className="border-2 border-blue-500 p-3 text-center">
-                            <div className="flex justify-center gap-4">
-                              <label className="flex items-center cursor-pointer">
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Evaluation Matrix */}
+          <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+              EVALUATION MATRIX
+            </h2>
+            <p className="text-blue-300 mb-4" style={{ fontFamily: 'monospace' }}>
+              For each translated item, evaluate against all 10 criteria:
+            </p>
+
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b-2 border-blue-500">
+                    <th className="p-2 text-left text-blue-300" style={{ fontFamily: 'monospace' }}>Item</th>
+                    {FACE_VALIDITY_CRITERIA.map(criteria => (
+                      <th key={criteria.id} className="p-2 text-center text-blue-300" style={{ fontFamily: 'monospace' }}>
+                        C{criteria.id}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {project.translatedScaleItems.map((item, itemIdx) => (
+                    <tr key={item.id} className="border-b border-blue-700">
+                      <td className="p-2 text-blue-400" style={{ fontFamily: 'monospace' }}>
+                        Item {itemIdx + 1}
+                      </td>
+                      {FACE_VALIDITY_CRITERIA.map(criteria => {
+                        const key = `item${itemIdx}_criteria${criteria.id}`
+                        return (
+                          <td key={criteria.id} className="p-2 text-center">
+                            <div className="flex justify-center gap-2">
+                              <label className="flex items-center gap-1 cursor-pointer">
                                 <input
                                   type="radio"
-                                  name={`item${itemIndex}_criteria${criteria.id}`}
-                                  value="1"
-                                  checked={responses[`item${itemIndex}_criteria${criteria.id}`] === 1}
-                                  onChange={() => handleResponseChange(itemIndex, criteria.id, 1)}
-                                  className="mr-2"
+                                  name={key}
+                                  value="YES"
+                                  checked={responses[key] === 'YES'}
+                                  onChange={(e) => handleResponseChange(itemIdx, criteria.id, e.target.value)}
+                                  className="cursor-pointer"
                                 />
-                                <span className="text-green-400" style={{ fontFamily: 'monospace' }}>YES</span>
+                                <span className="text-green-400 text-xs" style={{ fontFamily: 'monospace' }}>Y</span>
                               </label>
-                              <label className="flex items-center cursor-pointer">
+                              <label className="flex items-center gap-1 cursor-pointer">
                                 <input
                                   type="radio"
-                                  name={`item${itemIndex}_criteria${criteria.id}`}
-                                  value="0"
-                                  checked={responses[`item${itemIndex}_criteria${criteria.id}`] === 0}
-                                  onChange={() => handleResponseChange(itemIndex, criteria.id, 0)}
-                                  className="mr-2"
+                                  name={key}
+                                  value="NO"
+                                  checked={responses[key] === 'NO'}
+                                  onChange={(e) => handleResponseChange(itemIdx, criteria.id, e.target.value)}
+                                  className="cursor-pointer"
                                 />
-                                <span className="text-red-400" style={{ fontFamily: 'monospace' }}>NO</span>
+                                <span className="text-red-400 text-xs" style={{ fontFamily: 'monospace' }}>N</span>
                               </label>
                             </div>
                           </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
 
-          <div className="flex justify-center gap-4">
+            {/* Criteria Legend */}
+            <div className="mt-6 space-y-2">
+              <h3 className="text-xl font-bold text-blue-400 mb-3" style={{ fontFamily: 'monospace' }}>
+                CRITERIA LEGEND:
+              </h3>
+              {FACE_VALIDITY_CRITERIA.map(criteria => (
+                <div key={criteria.id} className="text-blue-300" style={{ fontFamily: 'monospace' }}>
+                  <span className="text-blue-400 font-bold">C{criteria.id}:</span> {criteria.text}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-center">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded border-2 border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ fontFamily: 'monospace', textShadow: '0 0 10px #1E90FF', boxShadow: '0 0 20px rgba(30, 144, 255, 0.5)' }}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg border-2 border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}
             >
               {isSubmitting ? '⟳ SUBMITTING...' : '✓ SUBMIT EVALUATION'}
             </button>
