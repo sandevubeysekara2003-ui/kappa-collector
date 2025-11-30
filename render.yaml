@@ -1,7 +1,7 @@
 services:
   # Backend Service
   - type: web
-    name: kappa-collector-backend
+    name: kappa-collector
     env: node
     region: oregon
     plan: free
@@ -17,7 +17,7 @@ services:
 
   # Frontend Static Site
   - type: web
-    name: kappa-collector-frontend
+    name: link-for-invitees
     env: static
     region: oregon
     plan: free
