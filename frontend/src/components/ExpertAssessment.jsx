@@ -216,16 +216,16 @@ function ExpertAssessment({ projectId }) {
 
   // Main form
   return (
-    <div className="min-h-screen bg-black text-blue-400 p-8">
+    <div className="min-h-screen bg-black text-white p-8">
       <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6 mb-8">
-          <h1 className="text-3xl font-bold text-blue-400 mb-2" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+          <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
             EXPERT ASSESSMENT FORM
           </h1>
-          <p className="text-blue-300" style={{ fontFamily: 'monospace' }}>
+          <p className="text-gray-300" style={{ fontFamily: 'monospace' }}>
             Project: {project.name}
           </p>
         </div>
@@ -233,52 +233,53 @@ function ExpertAssessment({ projectId }) {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Expert Information */}
           <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+            <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
               EXPERT INFORMATION
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Name *</label>
+                <label className="block text-white mb-2" style={{ fontFamily: 'monospace' }}>Name *</label>
                 <input
                   type="text"
                   value={expertName}
                   onChange={(e) => setExpertName(e.target.value)}
-                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-blue-400 focus:outline-none focus:border-blue-300"
+                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-300"
                   style={{ fontFamily: 'monospace' }}
                   required
                 />
               </div>
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Email *</label>
+                <label className="block text-white mb-2" style={{ fontFamily: 'monospace' }}>Email *</label>
                 <input
                   type="email"
                   value={expertEmail}
                   onChange={(e) => setExpertEmail(e.target.value)}
-                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-blue-400 focus:outline-none focus:border-blue-300"
+                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-300"
                   style={{ fontFamily: 'monospace' }}
                   required
                 />
               </div>
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Qualification *</label>
+                <label className="block text-white mb-2" style={{ fontFamily: 'monospace' }}>Qualification *</label>
                 <input
                   type="text"
                   value={expertQualification}
                   onChange={(e) => setExpertQualification(e.target.value)}
-                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-blue-400 focus:outline-none focus:border-blue-300"
+                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-300"
                   style={{ fontFamily: 'monospace' }}
                   required
                 />
               </div>
               <div>
-                <label className="block text-blue-300 mb-2" style={{ fontFamily: 'monospace' }}>Years of Experience *</label>
+                <label className="block text-white mb-2" style={{ fontFamily: 'monospace' }}>Years of Experience *</label>
                 <input
                   type="number"
                   value={expertYearsOfExperience}
                   onChange={(e) => setExpertYearsOfExperience(e.target.value)}
-                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-blue-400 focus:outline-none focus:border-blue-300"
+                  className="w-full bg-black border-2 border-blue-500 rounded px-4 py-2 text-white focus:outline-none focus:border-blue-300"
                   style={{ fontFamily: 'monospace' }}
                   required
+                  min="0"
                 />
               </div>
             </div>
@@ -286,33 +287,70 @@ function ExpertAssessment({ projectId }) {
 
           {/* Instructions */}
           <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+            <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
               INSTRUCTIONS
             </h2>
-            <p className="text-blue-300 mb-4" style={{ fontFamily: 'monospace' }}>
-              Please evaluate each translated item against the 10 face validity criteria listed below.
-              For each item-criteria combination, select YES or NO.
+            <div className="text-white space-y-3" style={{ fontFamily: 'monospace' }}>
+              <p className="font-bold">Dear Expert,</p>
+              <p>
+                Thank you for participating in this face validation study. Your expertise is invaluable in ensuring the quality and validity of this translated instrument.
+              </p>
+              <p className="font-bold mt-4">Please follow these steps:</p>
+              <ol className="list-decimal list-inside space-y-2 ml-4">
+                <li>Review the <strong>Original Scale Items</strong> (in English) to understand the intended meaning of each item.</li>
+                <li>Review the <strong>Translated Scale Items</strong> (in Sinhala) to see how each item has been translated.</li>
+                <li>Familiarize yourself with the <strong>10 Face Validity Criteria</strong> listed below.</li>
+                <li>In the <strong>Evaluation Matrix</strong>, assess each translated item against ALL 10 criteria.</li>
+                <li>For each item-criterion combination, select <strong>YES</strong> if the criterion is met, or <strong>NO</strong> if it is not.</li>
+                <li>Ensure you complete ALL evaluations before submitting the form.</li>
+              </ol>
+              <p className="mt-4 text-yellow-300">
+                ⚠ Note: You must evaluate all {project.translatedScaleItems?.length || 0} items against all 10 criteria
+                (total {(project.translatedScaleItems?.length || 0) * 10} evaluations required).
+              </p>
+            </div>
+          </div>
+
+          {/* Face Validity Criteria */}
+          <div className="bg-black bg-opacity-80 border-2 border-green-500 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-green-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #22C55E' }}>
+              FACE VALIDITY CRITERIA
+            </h2>
+            <p className="text-white mb-4" style={{ fontFamily: 'monospace' }}>
+              Please evaluate each item based on the following 10 criteria:
             </p>
+            <div className="space-y-2">
+              {FACE_VALIDITY_CRITERIA.map((criterion) => (
+                <div key={criterion.id} className="flex items-start gap-3 p-3 bg-black bg-opacity-50 border border-green-700 rounded">
+                  <span className="text-green-400 font-bold min-w-[60px]" style={{ fontFamily: 'monospace' }}>
+                    C{criterion.id}:
+                  </span>
+                  <span className="text-white" style={{ fontFamily: 'monospace' }}>
+                    {criterion.text}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Original Scale Items */}
           <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+            <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
               ORIGINAL SCALE (English)
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b-2 border-blue-500">
-                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Item #</th>
-                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Text</th>
+                    <th className="text-left p-3 text-white" style={{ fontFamily: 'monospace' }}>Item #</th>
+                    <th className="text-left p-3 text-white" style={{ fontFamily: 'monospace' }}>Text</th>
                   </tr>
                 </thead>
                 <tbody>
                   {project.originalScaleItems.map((item, idx) => (
                     <tr key={item.id} className="border-b border-blue-700">
-                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{idx + 1}</td>
-                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{item.text}</td>
+                      <td className="p-3 text-white" style={{ fontFamily: 'monospace' }}>{idx + 1}</td>
+                      <td className="p-3 text-white" style={{ fontFamily: 'monospace' }}>{item.text}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -322,22 +360,22 @@ function ExpertAssessment({ projectId }) {
 
           {/* Translated Scale Items */}
           <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+            <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
               TRANSLATED SCALE (Sinhala)
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b-2 border-blue-500">
-                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Item #</th>
-                    <th className="text-left p-3 text-blue-300" style={{ fontFamily: 'monospace' }}>Text</th>
+                    <th className="text-left p-3 text-white" style={{ fontFamily: 'monospace' }}>Item #</th>
+                    <th className="text-left p-3 text-white" style={{ fontFamily: 'monospace' }}>Text</th>
                   </tr>
                 </thead>
                 <tbody>
                   {project.translatedScaleItems.map((item, idx) => (
                     <tr key={item.id} className="border-b border-blue-700">
-                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{idx + 1}</td>
-                      <td className="p-3 text-blue-400" style={{ fontFamily: 'monospace' }}>{item.text}</td>
+                      <td className="p-3 text-white" style={{ fontFamily: 'monospace' }}>{idx + 1}</td>
+                      <td className="p-3 text-white" style={{ fontFamily: 'monospace' }}>{item.text}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -347,10 +385,10 @@ function ExpertAssessment({ projectId }) {
 
           {/* Evaluation Matrix */}
           <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+            <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
               EVALUATION MATRIX
             </h2>
-            <p className="text-blue-300 mb-4" style={{ fontFamily: 'monospace' }}>
+            <p className="text-white mb-4" style={{ fontFamily: 'monospace' }}>
               For each translated item, evaluate against all 10 criteria:
             </p>
 
@@ -358,9 +396,9 @@ function ExpertAssessment({ projectId }) {
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b-2 border-blue-500">
-                    <th className="p-2 text-left text-blue-300" style={{ fontFamily: 'monospace' }}>Item</th>
+                    <th className="p-2 text-left text-white" style={{ fontFamily: 'monospace' }}>Item</th>
                     {FACE_VALIDITY_CRITERIA.map(criteria => (
-                      <th key={criteria.id} className="p-2 text-center text-blue-300" style={{ fontFamily: 'monospace' }}>
+                      <th key={criteria.id} className="p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
                         C{criteria.id}
                       </th>
                     ))}
@@ -369,7 +407,7 @@ function ExpertAssessment({ projectId }) {
                 <tbody>
                   {project.translatedScaleItems.map((item, itemIdx) => (
                     <tr key={item.id} className="border-b border-blue-700">
-                      <td className="p-2 text-blue-400" style={{ fontFamily: 'monospace' }}>
+                      <td className="p-2 text-white" style={{ fontFamily: 'monospace' }}>
                         Item {itemIdx + 1}
                       </td>
                       {FACE_VALIDITY_CRITERIA.map(criteria => {
@@ -407,18 +445,6 @@ function ExpertAssessment({ projectId }) {
                   ))}
                 </tbody>
               </table>
-            </div>
-
-            {/* Criteria Legend */}
-            <div className="mt-6 space-y-2">
-              <h3 className="text-xl font-bold text-blue-400 mb-3" style={{ fontFamily: 'monospace' }}>
-                CRITERIA LEGEND:
-              </h3>
-              {FACE_VALIDITY_CRITERIA.map(criteria => (
-                <div key={criteria.id} className="text-blue-300" style={{ fontFamily: 'monospace' }}>
-                  <span className="text-blue-400 font-bold">C{criteria.id}:</span> {criteria.text}
-                </div>
-              ))}
             </div>
           </div>
 
