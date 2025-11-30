@@ -70,6 +70,9 @@ function ExpertAssessment({ projectId, onBack }) {
 
   // Fetch project data
   useEffect(() => {
+    let retryCount = 0
+    const maxRetries = 3
+
     const fetchProject = async () => {
       if (!projectId) {
         console.error('❌ No project ID provided')
@@ -88,13 +91,16 @@ function ExpertAssessment({ projectId, onBack }) {
       console.log('Project ID:', projectId)
       console.log('Full URL:', fullUrl)
       console.log('Timestamp:', new Date().toISOString())
+      console.log('Retry attempt:', retryCount + 1, 'of', maxRetries)
 
       try {
         console.log('🔄 Starting fetch...')
         const res = await fetch(fullUrl, {
           method: 'GET',
+          mode: 'cors',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         })
 
@@ -108,12 +114,28 @@ function ExpertAssessment({ projectId, onBack }) {
           console.log('✅ Project loaded successfully:', data.name)
           console.log('Original items:', data.originalScaleItems?.length)
           console.log('Translated items:', data.translatedScaleItems?.length)
+
+          // Validate data
+          if (!data.originalScaleItems || !data.translatedScaleItems) {
+            throw new Error('Invalid project data: missing items')
+          }
+
           setProject(data)
+          setError(null)
         } else {
           const errorText = await res.text()
           console.error('❌ Failed to load project')
           console.error('Status:', res.status)
           console.error('Response:', errorText)
+
+          // Retry on server errors
+          if (res.status >= 500 && retryCount < maxRetries) {
+            retryCount++
+            console.log(`⏳ Retrying in 2 seconds... (attempt ${retryCount}/${maxRetries})`)
+            setTimeout(fetchProject, 2000)
+            return
+          }
+
           setError(`Project not found (Status: ${res.status})`)
         }
       } catch (err) {
@@ -121,10 +143,21 @@ function ExpertAssessment({ projectId, onBack }) {
         console.error('Error name:', err.name)
         console.error('Error message:', err.message)
         console.error('Error stack:', err.stack)
-        setError(`Network error: ${err.message}`)
+
+        // Retry on network errors
+        if (retryCount < maxRetries) {
+          retryCount++
+          console.log(`⏳ Retrying in 2 seconds... (attempt ${retryCount}/${maxRetries})`)
+          setTimeout(fetchProject, 2000)
+          return
+        }
+
+        setError(`Network error: ${err.message}. Please check your internet connection.`)
       } finally {
-        setIsLoading(false)
-        console.log('=== FETCH COMPLETE ===')
+        if (retryCount >= maxRetries || project || error) {
+          setIsLoading(false)
+          console.log('=== FETCH COMPLETE ===')
+        }
       }
     }
 

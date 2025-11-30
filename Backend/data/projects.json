@@ -236,5 +236,97 @@
         "submittedAt": "2025-11-29T00:45:00.800Z"
       }
     ]
+  },
+  {
+    "id": 2,
+    "name": "jjj",
+    "description": "",
+    "type": "face-validity",
+    "adminId": 2,
+    "originalScaleItems": [
+      {
+        "id": 1764487581690,
+        "text": "I find it easy to stay focused on my academic tasks."
+      },
+      {
+        "id": 1764487581691,
+        "text": "I feel motivated to complete my daily study goals."
+      },
+      {
+        "id": 1764487581692,
+        "text": "I can return to work quickly even after distractions."
+      },
+      {
+        "id": 1764487581693,
+        "text": "I enjoy learning new things in my academic subjects."
+      },
+      {
+        "id": 1764487581694,
+        "text": "I feel confident about managing my study workload."
+      },
+      {
+        "id": 1764487581695,
+        "text": "I keep trying even when an academic task feels difficult."
+      },
+      {
+        "id": 1764487581696,
+        "text": "I plan my study time effectively."
+      },
+      {
+        "id": 1764487581697,
+        "text": "I can concentrate well during long study sessions."
+      },
+      {
+        "id": 1764487581698,
+        "text": "I feel satisfied after completing my academic tasks."
+      },
+      {
+        "id": 1764487581699,
+        "text": "I try to improve my study habits regularly."
+      }
+    ],
+    "translatedScaleItems": [
+      {
+        "id": 1764487588610,
+        "text": "මගේ අධ්‍යාපනික කාර්යයන්ට අවධානයෙන් සිටීම මට පහසු වේ."
+      },
+      {
+        "id": 1764487588611,
+        "text": "දිනපතා අධ්‍යාපනයේ ඉලක්ක ඉටු කිරීමට මට ප්‍රೇರණය महसूस වේ."
+      },
+      {
+        "id": 1764487588612,
+        "text": "වික्षेपයන් අයත් වුවත්, මට ඉක්මනින් නැවත වැඩට හැරුන හැකි වේ."
+      },
+      {
+        "id": 1764487588613,
+        "text": "අධ්‍යාපනික විෂයයන් තුළ නව දෑ ඉගෙන ගැනීම මට රසවින්දනීයවේ."
+      },
+      {
+        "id": 1764487588614,
+        "text": "අධ්‍යාපන කාර්යභාරය කළමනාකරණය කිරීමට මට විශ්වාසවන්ත බවක් ඇත."
+      },
+      {
+        "id": 1764487588615,
+        "text": "අධ්‍යාපනික කාර්යයක් අපහසු වුවත්, මම මැඩහරී නොවී ඉදිරියට යම්."
+      },
+      {
+        "id": 1764487588616,
+        "text": "මගේ අධ්‍යාපනික කාලය සකස් කර ගැනීම මට හොඳින් සිදු කළ හැක."
+      },
+      {
+        "id": 1764487588617,
+        "text": "දිර්ඝ අධ්‍යාපන සැසියකදී මට අවධානය පවත්වාගෙන යා හැක."
+      },
+      {
+        "id": 1764487588618,
+        "text": "අධ්‍යාපනික කාර්යයන් අවසන් කර පසු මට සතුටක් अनुभव වේ."
+      },
+      {
+        "id": 1764487588619,
+        "text": "මගේ අධ්‍යාපනික பழக்கවත්ත सुधार කිරීමට මම නිතර උත්සාහ කරමි."
+      }
+    ],
+    "createdAt": "2025-11-30T07:24:50.344Z"
   }
 ]
