@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
 import { API_URL } from '../config'
 
@@ -15,7 +15,7 @@ const FACE_VALIDITY_CRITERIA = [
   { id: 10, text: 'Reasonableness of items in relation to the supposed purpose of the instrument.' }
 ]
 
-function ExpertAssessment({ projectId, onBack }) {
+function ExpertAssessment({ projectId }) {
   const [project, setProject] = useState(null)
   const [expertName, setExpertName] = useState('')
   const [expertEmail, setExpertEmail] = useState('')
@@ -71,93 +71,37 @@ function ExpertAssessment({ projectId, onBack }) {
 
   // Fetch project data
   useEffect(() => {
-    let retryCount = 0
-    const maxRetries = 3
-
     const fetchProject = async () => {
       if (!projectId) {
-        console.error('❌ No project ID provided')
         setError('No project ID provided')
         setIsLoading(false)
         return
       }
 
-      setIsLoading(true)
-      setError(null)
-
-      const fullUrl = `${API_URL}/api/projects/${projectId}`
-
-      console.log('=== EXPERT ASSESSMENT FETCH ===')
-      console.log('Project ID:', projectId)
-      console.log('Full URL:', fullUrl)
-      console.log('Timestamp:', new Date().toISOString())
-      console.log('Retry attempt:', retryCount + 1, 'of', maxRetries)
-
       try {
-        console.log('🔄 Starting fetch...')
-        const res = await fetch(fullUrl, {
-          method: 'GET',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        })
+        console.log('🔄 Fetching project:', projectId)
+        console.log('API URL:', API_URL)
 
-        console.log('📡 Response received')
-        console.log('Status:', res.status)
-        console.log('Status Text:', res.statusText)
-        console.log('Headers:', Object.fromEntries(res.headers.entries()))
+        const response = await fetch(`${API_URL}/api/projects/${projectId}`)
 
-        if (res.ok) {
-          const data = await res.json()
-          console.log('✅ Project loaded successfully:', data.name)
-          console.log('Original items:', data.originalScaleItems?.length)
-          console.log('Translated items:', data.translatedScaleItems?.length)
+        console.log('Response status:', response.status)
 
-          // Validate data
-          if (!data.originalScaleItems || !data.translatedScaleItems) {
-            throw new Error('Invalid project data: missing items')
-          }
-
-          setProject(data)
-          setError(null)
-        } else {
-          const errorText = await res.text()
-          console.error('❌ Failed to load project')
-          console.error('Status:', res.status)
-          console.error('Response:', errorText)
-
-          // Retry on server errors
-          if (res.status >= 500 && retryCount < maxRetries) {
-            retryCount++
-            console.log(`⏳ Retrying in 2 seconds... (attempt ${retryCount}/${maxRetries})`)
-            setTimeout(fetchProject, 2000)
-            return
-          }
-
-          setError(`Project not found (Status: ${res.status})`)
+        if (!response.ok) {
+          throw new Error(`Failed to load project (Status: ${response.status})`)
         }
+
+        const data = await response.json()
+        console.log('✅ Project loaded:', data.name)
+        console.log('Original items:', data.originalScaleItems?.length)
+        console.log('Translated items:', data.translatedScaleItems?.length)
+
+        setProject(data)
+        setError(null)
       } catch (err) {
-        console.error('❌ Network error:', err)
-        console.error('Error name:', err.name)
-        console.error('Error message:', err.message)
-        console.error('Error stack:', err.stack)
-
-        // Retry on network errors
-        if (retryCount < maxRetries) {
-          retryCount++
-          console.log(`⏳ Retrying in 2 seconds... (attempt ${retryCount}/${maxRetries})`)
-          setTimeout(fetchProject, 2000)
-          return
-        }
-
-        setError(`Network error: ${err.message}. Please check your internet connection.`)
+        console.error('❌ Error loading project:', err)
+        setError(err.message)
       } finally {
-        if (retryCount >= maxRetries || project || error) {
-          setIsLoading(false)
-          console.log('=== FETCH COMPLETE ===')
-        }
+        setIsLoading(false)
       }
     }
 
