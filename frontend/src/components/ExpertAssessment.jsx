@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'react-toastify'
+import { API_URL } from '../config'
 
 const FACE_VALIDITY_CRITERIA = [
   { id: 1, text: 'Appropriateness of grammar.' },
@@ -84,8 +85,7 @@ function ExpertAssessment({ projectId, onBack }) {
       setIsLoading(true)
       setError(null)
 
-      const apiUrl = 'https://kappa-collector.onrender.com'
-      const fullUrl = `${apiUrl}/api/projects/${projectId}`
+      const fullUrl = `${API_URL}/api/projects/${projectId}`
 
       console.log('=== EXPERT ASSESSMENT FETCH ===')
       console.log('Project ID:', projectId)
@@ -190,7 +190,7 @@ function ExpertAssessment({ projectId, onBack }) {
     setIsSubmitting(true)
 
     try {
-      const res = await fetch(`https://kappa-collector.onrender.com/api/expert-response/${projectId}`, {
+      const res = await fetch(`${API_URL}/api/expert-response/${projectId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
