@@ -72,6 +72,7 @@ function ExpertAssessment({ projectId, onBack }) {
   useEffect(() => {
     const fetchProject = async () => {
       if (!projectId) {
+        console.error('❌ No project ID provided')
         setError('No project ID provided')
         setIsLoading(false)
         return
@@ -83,21 +84,47 @@ function ExpertAssessment({ projectId, onBack }) {
       const apiUrl = 'https://kappa-collector.onrender.com'
       const fullUrl = `${apiUrl}/api/projects/${projectId}`
 
-      console.log('Fetching project ID:', projectId)
+      console.log('=== EXPERT ASSESSMENT FETCH ===')
+      console.log('Project ID:', projectId)
       console.log('Full URL:', fullUrl)
+      console.log('Timestamp:', new Date().toISOString())
 
       try {
-        const res = await fetch(fullUrl)
+        console.log('🔄 Starting fetch...')
+        const res = await fetch(fullUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+
+        console.log('📡 Response received')
+        console.log('Status:', res.status)
+        console.log('Status Text:', res.statusText)
+        console.log('Headers:', Object.fromEntries(res.headers.entries()))
+
         if (res.ok) {
           const data = await res.json()
+          console.log('✅ Project loaded successfully:', data.name)
+          console.log('Original items:', data.originalScaleItems?.length)
+          console.log('Translated items:', data.translatedScaleItems?.length)
           setProject(data)
         } else {
+          const errorText = await res.text()
+          console.error('❌ Failed to load project')
+          console.error('Status:', res.status)
+          console.error('Response:', errorText)
           setError(`Project not found (Status: ${res.status})`)
         }
       } catch (err) {
+        console.error('❌ Network error:', err)
+        console.error('Error name:', err.name)
+        console.error('Error message:', err.message)
+        console.error('Error stack:', err.stack)
         setError(`Network error: ${err.message}`)
       } finally {
         setIsLoading(false)
+        console.log('=== FETCH COMPLETE ===')
       }
     }
 
