@@ -1167,7 +1167,16 @@ function ProjectDashboard({ project, user, onBack }) {
                         <thead>
                           <tr className="bg-purple-600">
                             <th className="border border-purple-400 px-4 py-3 text-white" style={{ fontFamily: 'monospace' }}>
-                              EXPERT
+                              EXPERT NAME
+                            </th>
+                            <th className="border border-purple-400 px-3 py-3 text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                              EMAIL
+                            </th>
+                            <th className="border border-purple-400 px-3 py-3 text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                              QUALIFICATION
+                            </th>
+                            <th className="border border-purple-400 px-3 py-3 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                              YEARS EXP
                             </th>
                             {FACE_VALIDITY_CRITERIA.map((criteria) => (
                               <th key={criteria.id} className="border border-purple-400 px-3 py-3 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
@@ -1188,7 +1197,7 @@ function ProjectDashboard({ project, user, onBack }) {
                             <>
                               {/* Item Header Row */}
                               <tr key={`item-header-${itemIndex}`} className="bg-purple-700">
-                                <td colSpan={FACE_VALIDITY_CRITERIA.length + 3} className="border border-purple-400 px-4 py-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
+                                <td colSpan={FACE_VALIDITY_CRITERIA.length + 7} className="border border-purple-400 px-4 py-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
                                   ITEM {itemIndex + 1}: {item.text || 'No text'}
                                 </td>
                               </tr>
@@ -1206,6 +1215,15 @@ function ProjectDashboard({ project, user, onBack }) {
                                   <tr key={`item-${itemIndex}-expert-${expertIndex}`} className="bg-black bg-opacity-60">
                                     <td className="border border-purple-400 px-4 py-3 text-purple-300" style={{ fontFamily: 'monospace' }}>
                                       {expert.expertName}
+                                    </td>
+                                    <td className="border border-purple-400 px-3 py-3 text-purple-300 text-xs" style={{ fontFamily: 'monospace' }}>
+                                      {expert.expertEmail}
+                                    </td>
+                                    <td className="border border-purple-400 px-3 py-3 text-purple-300 text-xs" style={{ fontFamily: 'monospace' }}>
+                                      {expert.expertQualification}
+                                    </td>
+                                    <td className="border border-purple-400 px-3 py-3 text-center text-purple-300 text-xs" style={{ fontFamily: 'monospace' }}>
+                                      {expert.expertYearsOfExperience}
                                     </td>
                                     {FACE_VALIDITY_CRITERIA.map((criteria) => {
                                       const key = `item${itemIndex}_criteria${criteria.id}`
@@ -1247,7 +1265,7 @@ function ProjectDashboard({ project, user, onBack }) {
                                     <td className="border border-purple-400 px-4 py-3 text-yellow-400 font-bold" style={{ fontFamily: 'monospace' }}>
                                       OVERALL AGREEMENT
                                     </td>
-                                    <td colSpan={FACE_VALIDITY_CRITERIA.length + 2} className="border border-purple-400 px-4 py-3 text-center text-yellow-400 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
+                                    <td colSpan={FACE_VALIDITY_CRITERIA.length + 6} className="border border-purple-400 px-4 py-3 text-center text-yellow-400 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
                                       {agreementPercentage}% ({totalYes}/{totalResponses} YES responses)
                                     </td>
                                   </tr>

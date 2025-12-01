@@ -872,6 +872,22 @@ app.post('/api/expert-response/:projectId', async (req, res) => {
 			return res.status(400).json({ error: 'You have already submitted a response for this project' });
 		}
 
+		// Normalize responses: Convert "YES"/"NO" strings to 1/0 numbers
+		const normalizedResponses = {};
+		Object.keys(responses).forEach(key => {
+			const value = responses[key];
+			if (value === "YES" || value === "yes" || value === 1 || value === true) {
+				normalizedResponses[key] = 1;
+			} else if (value === "NO" || value === "no" || value === 0 || value === false) {
+				normalizedResponses[key] = 0;
+			} else {
+				// Keep original value if it's neither YES nor NO
+				normalizedResponses[key] = value;
+			}
+		});
+
+		console.log('Normalized responses (first 5):', Object.entries(normalizedResponses).slice(0, 5));
+
 		// Add expert response
 		const expertResponse = {
 			id: Date.now(),
@@ -879,7 +895,7 @@ app.post('/api/expert-response/:projectId', async (req, res) => {
 			expertEmail,
 			expertQualification,
 			expertYearsOfExperience,
-			responses,
+			responses: normalizedResponses,
 			submittedAt: new Date().toISOString()
 		};
 

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Expert Assessment Backend</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { color: #00BFFF; }
+        button {
+            background: #00BFFF;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        button:hover { background: #0080FF; }
+        .result {
+            background: #111;
+            border: 2px solid #00BFFF;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        input, textarea {
+            background: #111;
+            color: #0f0;
+            border: 1px solid #00BFFF;
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            font-family: monospace;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #00BFFF;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 BACKEND TEST - Expert Assessment Form</h1>
+    
+    <h2>Step 1: Test Backend Connection</h2>
+    <button onclick="testBackendHealth()">Test Backend Health</button>
+    <button onclick="testGetProject()">Test GET /api/projects/1</button>
+    <div id="healthResult" class="result"></div>
+
+    <h2>Step 2: Test Expert Response Submission</h2>
+    <label>Expert Name:</label>
+    <input type="text" id="expertName" value="Test Expert">
+    
+    <label>Expert Email:</label>
+    <input type="email" id="expertEmail" value="test@example.com">
+    
+    <label>Qualification:</label>
+    <input type="text" id="expertQualification" value="PhD in Psychology">
+    
+    <label>Years of Experience:</label>
+    <input type="number" id="expertYears" value="10">
+    
+    <button onclick="testSubmitResponse()">Submit Test Response</button>
+    <div id="submitResult" class="result"></div>
+
+    <script>
+        const BACKEND_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:4000' 
+            : 'https://kappa-collector.onrender.com';
+
+        function log(elementId, message, isError = false) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = message;
+            el.className = 'result ' + (isError ? 'error' : 'success');
+        }
+
+        async function testBackendHealth() {
+            log('healthResult', '⏳ Testing backend health...');
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.json();
+                log('healthResult', `✅ Backend is healthy!\n\n${JSON.stringify(data, null, 2)}`);
+            } catch (err) {
+                log('healthResult', `❌ Backend health check failed!\n\nError: ${err.message}`, true);
+            }
+        }
+
+        async function testGetProject() {
+            log('healthResult', '⏳ Fetching project 1...');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/projects/1`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                log('healthResult', `✅ Project loaded successfully!\n\nProject: ${data.name}\nType: ${data.type}\nOriginal Items: ${data.originalScaleItems?.length}\nTranslated Items: ${data.translatedScaleItems?.length}\n\n${JSON.stringify(data, null, 2).substring(0, 500)}...`);
+            } catch (err) {
+                log('healthResult', `❌ Failed to load project!\n\nError: ${err.message}`, true);
+            }
+        }
+
+        async function testSubmitResponse() {
+            log('submitResult', '⏳ Submitting test response...');
+            
+            const expertName = document.getElementById('expertName').value;
+            const expertEmail = document.getElementById('expertEmail').value;
+            const expertQualification = document.getElementById('expertQualification').value;
+            const expertYears = parseInt(document.getElementById('expertYears').value);
+
+            // Create dummy responses (12 items × 10 criteria = 120 responses)
+            const responses = {};
+            for (let i = 0; i < 12; i++) {
+                for (let c = 1; c <= 10; c++) {
+                    responses[`item${i}-c${c}`] = Math.random() > 0.5 ? 'yes' : 'no';
+                }
+            }
+
+            const payload = {
+                expertName,
+                expertEmail,
+                expertQualification,
+                expertYearsOfExperience: expertYears,
+                responses
+            };
+
+            try {
+                console.log('Sending payload:', payload);
+                const response = await fetch(`${BACKEND_URL}/api/expert-response/1`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('submitResult', `✅ Response submitted successfully!\n\n${JSON.stringify(data, null, 2)}`);
+                } else {
+                    log('submitResult', `❌ Submission failed!\n\nStatus: ${response.status}\nError: ${data.error || 'Unknown error'}\n\n${JSON.stringify(data, null, 2)}`, true);
+                }
+            } catch (err) {
+                log('submitResult', `❌ Network error!\n\nError: ${err.message}`, true);
+            }
+        }
+
+        // Auto-test on load
+        window.onload = () => {
+            testBackendHealth();
+        };
+    </script>
+</body>
+</html>
+
