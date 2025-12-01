@@ -12,9 +12,27 @@ const { parseDocument, validateItemCount } = require('./documentParser');
 
 const app = express();
 
-// Enhanced CORS configuration
+// Enhanced CORS configuration - Allow all origins including Render frontend
+const allowedOrigins = [
+	'http://localhost:5173',
+	'http://localhost:3000',
+	'https://link-for-invitees.onrender.com',
+	'https://kappa-collector-1.onrender.com',
+	'https://kappa-collector.onrender.com'
+];
+
 app.use(cors({
-	origin: '*', // Allow all origins for now
+	origin: function(origin, callback) {
+		// Allow requests with no origin (like mobile apps or curl requests)
+		if (!origin) return callback(null, true);
+
+		if (allowedOrigins.indexOf(origin) !== -1 || origin === undefined) {
+			callback(null, true);
+		} else {
+			console.log('⚠️ CORS blocked origin:', origin);
+			callback(null, true); // Still allow for now, but log it
+		}
+	},
 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 	allowedHeaders: ['Content-Type', 'Authorization'],
 	credentials: true
@@ -814,26 +832,43 @@ app.delete('/api/projects/:id', authMiddleware, async (req, res) => {
 // Expert response submission (no authentication required)
 app.post('/api/expert-response/:projectId', async (req, res) => {
 	try {
+		console.log('=== EXPERT RESPONSE SUBMISSION ===');
+		console.log('Request origin:', req.headers.origin);
+		console.log('Request body:', JSON.stringify(req.body, null, 2));
+		console.log('Project ID from params:', req.params.projectId);
+
 		const { expertName, expertEmail, expertQualification, expertYearsOfExperience, responses } = req.body;
 		const projectId = parseInt(req.params.projectId);
 
+		console.log('Parsed project ID:', projectId);
+		console.log('Expert name:', expertName);
+		console.log('Expert email:', expertEmail);
+		console.log('Responses count:', Object.keys(responses || {}).length);
+
 		if (!expertName || !expertEmail || !expertQualification || !expertYearsOfExperience || !responses) {
+			console.log('❌ Missing required fields');
 			return res.status(400).json({ error: 'All expert details and responses are required' });
 		}
 
 		const project = db.projects.find(p => p.id === projectId);
 		if (!project) {
+			console.log('❌ Project not found:', projectId);
+			console.log('Available projects:', db.projects.map(p => ({ id: p.id, name: p.name })));
 			return res.status(404).json({ error: 'Project not found' });
 		}
+
+		console.log('✅ Project found:', project.name);
 
 		// Initialize expertResponses array if it doesn't exist
 		if (!project.expertResponses) {
 			project.expertResponses = [];
+			console.log('Initialized expertResponses array');
 		}
 
 		// Check if expert already submitted
 		const existingResponse = project.expertResponses.find(r => r.expertEmail === expertEmail);
 		if (existingResponse) {
+			console.log('❌ Expert already submitted:', expertEmail);
 			return res.status(400).json({ error: 'You have already submitted a response for this project' });
 		}
 
@@ -848,13 +883,19 @@ app.post('/api/expert-response/:projectId', async (req, res) => {
 			submittedAt: new Date().toISOString()
 		};
 
+		console.log('Adding expert response with ID:', expertResponse.id);
 		project.expertResponses.push(expertResponse);
-		await saveProjects();
 
-		res.json({ message: 'Response submitted successfully' });
+		console.log('Saving to database...');
+		await saveProjects();
+		console.log('✅ Response saved successfully!');
+		console.log('Total expert responses for this project:', project.expertResponses.length);
+
+		res.json({ message: 'Response submitted successfully', responseId: expertResponse.id });
 	} catch (err) {
-		console.error(err);
-		res.status(500).json({ error: 'Server error' });
+		console.error('❌ Error in expert response submission:', err);
+		console.error('Error stack:', err.stack);
+		res.status(500).json({ error: 'Server error', message: err.message });
 	}
 });
 
