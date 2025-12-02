@@ -78,10 +78,16 @@ app.get('/health', (req, res) => {
 	});
 });
 
-// Database paths
-const DB_DIR = path.join(__dirname, 'data');
+// Database paths - Use absolute path for better persistence
+const DB_DIR = process.env.NODE_ENV === 'production'
+	? path.join('/opt/render/project/src', 'data')
+	: path.join(__dirname, 'data');
 const USERS_FILE = path.join(DB_DIR, 'users.json');
 const PROJECTS_FILE = path.join(DB_DIR, 'projects.json');
+
+console.log('📁 Database directory:', DB_DIR);
+console.log('👤 Users file:', USERS_FILE);
+console.log('📊 Projects file:', PROJECTS_FILE);
 
 // In-memory database
 let db = {
@@ -104,9 +110,14 @@ async function loadDatabase() {
 			const usersData = await fs.readFile(USERS_FILE, 'utf8');
 			db.users = JSON.parse(usersData);
 			console.log(`✓ Loaded ${db.users.length} users`);
+			if (db.users.length > 0) {
+				console.log('👥 User emails:', db.users.map(u => u.email));
+			}
 		} catch (err) {
 			console.log('⚠ No users file found, starting with empty users array');
 			db.users = [];
+			// Create initial empty file
+			await saveUsers();
 		}
 
 		try {
@@ -114,26 +125,52 @@ async function loadDatabase() {
 			db.projects = JSON.parse(projectsData);
 			console.log(`✓ Loaded ${db.projects.length} projects`);
 			if (db.projects.length > 0) {
-				console.log('Projects:', db.projects.map(p => ({ id: p.id, name: p.name, type: p.type })));
+				console.log('📊 Projects:', db.projects.map(p => ({ id: p.id, name: p.name, type: p.type })));
 			}
 		} catch (err) {
 			console.log('⚠ No projects file found, starting with empty projects array');
 			db.projects = [];
+			// Create initial empty file
+			await saveProjects();
 		}
 
 		console.log('✓ Database loaded successfully');
-		console.log(`Total: ${db.users.length} users, ${db.projects.length} projects`);
+		console.log(`📈 Total: ${db.users.length} users, ${db.projects.length} projects`);
 	} catch (err) {
 		console.error('✗ Error loading database:', err);
 	}
 }
 
 async function saveUsers() {
-	await fs.writeFile(USERS_FILE, JSON.stringify(db.users, null, 2));
+	try {
+		await fs.mkdir(DB_DIR, { recursive: true });
+		await fs.writeFile(USERS_FILE, JSON.stringify(db.users, null, 2));
+		console.log('💾 Users saved successfully. Total users:', db.users.length);
+
+		// Verify the file was written
+		const verification = await fs.readFile(USERS_FILE, 'utf8');
+		const verifiedUsers = JSON.parse(verification);
+		console.log('✓ Verified users file contains', verifiedUsers.length, 'users');
+	} catch (err) {
+		console.error('❌ Error saving users:', err);
+		throw err;
+	}
 }
 
 async function saveProjects() {
-	await fs.writeFile(PROJECTS_FILE, JSON.stringify(db.projects, null, 2));
+	try {
+		await fs.mkdir(DB_DIR, { recursive: true });
+		await fs.writeFile(PROJECTS_FILE, JSON.stringify(db.projects, null, 2));
+		console.log('💾 Projects saved successfully. Total projects:', db.projects.length);
+
+		// Verify the file was written
+		const verification = await fs.readFile(PROJECTS_FILE, 'utf8');
+		const verifiedProjects = JSON.parse(verification);
+		console.log('✓ Verified projects file contains', verifiedProjects.length, 'projects');
+	} catch (err) {
+		console.error('❌ Error saving projects:', err);
+		throw err;
+	}
 }
 
 // Authentication middleware
@@ -157,13 +194,17 @@ function authMiddleware(req, res, next) {
 app.post('/api/auth/register', async (req, res) => {
 	try {
 		const { name, email, password, qualification, experience } = req.body;
-		
+
+		console.log('📝 Registration attempt for:', email);
+		console.log('📊 Current users before registration:', db.users.length);
+
 		if (!name || !email || !password) {
 			return res.status(400).json({ error: 'Name, email, and password required' });
 		}
 
 		const existingUser = db.users.find(u => u.email === email);
 		if (existingUser) {
+			console.log('⚠️ Email already registered:', email);
 			return res.status(400).json({ error: 'Email already registered' });
 		}
 
@@ -181,7 +222,10 @@ app.post('/api/auth/register', async (req, res) => {
 		};
 
 		db.users.push(newUser);
+		console.log('✓ User added to memory, saving to file...');
 		await saveUsers();
+		console.log('✅ User saved to file successfully');
+		console.log('📊 Total users after registration:', db.users.length);
 
 		const token = jwt.sign({
 			id: newUser.id,
@@ -191,6 +235,7 @@ app.post('/api/auth/register', async (req, res) => {
 			projectIds: []
 		}, JWT_SECRET, { expiresIn: '7d' });
 
+		console.log('✅ Registration successful for:', email);
 		res.json({
 			token,
 			user: {
@@ -204,7 +249,7 @@ app.post('/api/auth/register', async (req, res) => {
 			}
 		});
 	} catch (err) {
-		console.error(err);
+		console.error('❌ Registration error:', err);
 		res.status(500).json({ error: 'Server error' });
 	}
 });
@@ -212,21 +257,29 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
 	try {
 		const { email, password } = req.body;
-		
+
+		console.log('🔐 Login attempt for email:', email);
+		console.log('📊 Current users in database:', db.users.length);
+		console.log('👥 User emails:', db.users.map(u => u.email));
+
 		if (!email || !password) {
 			return res.status(400).json({ error: 'Email and password required' });
 		}
 
 		const user = db.users.find(u => u.email === email);
 		if (!user) {
-			return res.status(401).json({ error: 'Invalid credentials' });
+			console.error('❌ User not found for email:', email);
+			return res.status(401).json({ error: 'Invalid credentials - user not found' });
 		}
 
+		console.log('✓ User found:', user.email);
 		const isPasswordValid = await bcrypt.compare(password, user.password);
 		if (!isPasswordValid) {
-			return res.status(401).json({ error: 'Invalid credentials' });
+			console.error('❌ Invalid password for user:', email);
+			return res.status(401).json({ error: 'Invalid credentials - wrong password' });
 		}
 
+		console.log('✅ Password valid, generating token');
 		const token = jwt.sign({
 			id: user.id,
 			email: user.email,
@@ -235,6 +288,7 @@ app.post('/api/auth/login', async (req, res) => {
 			projectIds: user.projectIds || []
 		}, JWT_SECRET, { expiresIn: '7d' });
 
+		console.log('✅ Login successful for:', email);
 		res.json({
 			token,
 			user: {
@@ -248,7 +302,7 @@ app.post('/api/auth/login', async (req, res) => {
 			}
 		});
 	} catch (err) {
-		console.error(err);
+		console.error('❌ Login error:', err);
 		res.status(500).json({ error: 'Server error' });
 	}
 });
@@ -1225,11 +1279,37 @@ app.get('/api/projects/:id/delphi/analytics', authMiddleware, async (req, res) =
 	}
 });
 
+// Periodic database backup (every 5 minutes)
+setInterval(async () => {
+	try {
+		console.log('🔄 Auto-saving database...');
+		await saveUsers();
+		await saveProjects();
+		console.log('✅ Auto-save completed');
+	} catch (err) {
+		console.error('❌ Auto-save failed:', err);
+	}
+}, 5 * 60 * 1000); // 5 minutes
+
+// Keep-alive mechanism - ping self every 10 minutes to prevent spin-down
+if (process.env.NODE_ENV === 'production') {
+	setInterval(() => {
+		const url = process.env.RENDER_EXTERNAL_URL || 'https://kappa-collector.onrender.com';
+		console.log('🏓 Keep-alive ping to:', url);
+		fetch(`${url}/health`)
+			.then(() => console.log('✓ Keep-alive ping successful'))
+			.catch(err => console.error('❌ Keep-alive ping failed:', err));
+	}, 10 * 60 * 1000); // 10 minutes
+}
+
 // Initialize and start server
 async function start() {
 	await loadDatabase();
 	app.listen(PORT, () => {
 		console.log(`✓ Auth API running on port ${PORT}`);
+		console.log(`✓ Database directory: ${DB_DIR}`);
+		console.log(`✓ Auto-save enabled (every 5 minutes)`);
+		console.log(`✓ Keep-alive enabled (every 10 minutes)`);
 	});
 }
 

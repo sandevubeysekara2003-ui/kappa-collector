@@ -38,19 +38,23 @@ function App() {
 
   const fetchUserData = async (token) => {
     try {
+      console.log('🔍 Fetching user data with token:', token ? 'Token exists' : 'No token')
       const res = await fetch(`${API_URL}/api/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
+      console.log('📡 Response status:', res.status)
       if (res.ok) {
         const data = await res.json()
+        console.log('✅ User data received:', data)
         // Backend returns user object directly, not wrapped in { user: ... }
         setUser(data)
         setCurrentPage('home')
       } else {
+        console.error('❌ Failed to fetch user data, status:', res.status)
         localStorage.removeItem('token')
       }
     } catch (err) {
-      console.error(err)
+      console.error('❌ Error fetching user data:', err)
       localStorage.removeItem('token')
     } finally {
       setIsLoading(false)

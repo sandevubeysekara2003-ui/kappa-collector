@@ -62,7 +62,7 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!email || !password) {
       toast.error('Please fill in all fields')
       return
@@ -70,22 +70,28 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
 
     setIsLoading(true)
     try {
+      console.log('🔐 Attempting login with email:', email)
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       })
 
+      console.log('📡 Login response status:', res.status)
       const data = await res.json()
+      console.log('📦 Login response data:', data)
 
       if (res.ok) {
         localStorage.setItem('token', data.token)
+        console.log('✅ Token saved to localStorage')
         toast.success('Login successful!')
         onLogin(data.user)
       } else {
+        console.error('❌ Login failed:', data.error)
         toast.error(data.error || 'Login failed')
       }
     } catch (err) {
+      console.error('❌ Login error:', err)
       toast.error('Connection error')
     } finally {
       setIsLoading(false)
