@@ -316,7 +316,7 @@ app.post('/api/parse-document', authMiddleware, upload.single('document'), async
 // Create new project (auto-assigns creator as admin)
 app.post('/api/projects', authMiddleware, async (req, res) => {
 	try {
-		const { name, description, type } = req.body;
+		const { name, description, type, scaleInstructions, scoringSystem } = req.body;
 
 		if (!name) {
 			return res.status(400).json({ error: 'Project name required' });
@@ -328,6 +328,8 @@ app.post('/api/projects', authMiddleware, async (req, res) => {
 			description: description || '',
 			type: type || 'delphi', // 'delphi' or 'face-validity'
 			adminId: req.user.id,
+			scaleInstructions: scaleInstructions || '',
+			scoringSystem: scoringSystem || '',
 			originalScaleItems: [],
 			translatedScaleItems: [],
 			createdAt: new Date().toISOString()
@@ -837,12 +839,13 @@ app.post('/api/expert-response/:projectId', async (req, res) => {
 		console.log('Request body:', JSON.stringify(req.body, null, 2));
 		console.log('Project ID from params:', req.params.projectId);
 
-		const { expertName, expertEmail, expertQualification, expertYearsOfExperience, responses } = req.body;
+		const { expertName, expertEmail, expertQualification, expertYearsOfExperience, expertRemarks, responses } = req.body;
 		const projectId = parseInt(req.params.projectId);
 
 		console.log('Parsed project ID:', projectId);
 		console.log('Expert name:', expertName);
 		console.log('Expert email:', expertEmail);
+		console.log('Expert remarks:', expertRemarks ? 'Provided' : 'Not provided');
 		console.log('Responses count:', Object.keys(responses || {}).length);
 
 		if (!expertName || !expertEmail || !expertQualification || !expertYearsOfExperience || !responses) {
@@ -895,6 +898,7 @@ app.post('/api/expert-response/:projectId', async (req, res) => {
 			expertEmail,
 			expertQualification,
 			expertYearsOfExperience,
+			expertRemarks: expertRemarks || '',
 			responses: normalizedResponses,
 			submittedAt: new Date().toISOString()
 		};

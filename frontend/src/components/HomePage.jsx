@@ -8,6 +8,8 @@ function HomePage({ user, onLogout, onProjectSelect }) {
   const [projectName, setProjectName] = useState('')
   const [projectDescription, setProjectDescription] = useState('')
   const [projectType, setProjectType] = useState('delphi') // 'delphi' or 'face-validity'
+  const [scaleInstructions, setScaleInstructions] = useState('')
+  const [scoringSystem, setScoringSystem] = useState('')
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -100,7 +102,9 @@ function HomePage({ user, onLogout, onProjectSelect }) {
         body: JSON.stringify({
           name: projectName,
           description: projectDescription,
-          type: projectType
+          type: projectType,
+          scaleInstructions: scaleInstructions,
+          scoringSystem: scoringSystem
         })
       })
 
@@ -110,6 +114,8 @@ function HomePage({ user, onLogout, onProjectSelect }) {
         setProjectName('')
         setProjectDescription('')
         setProjectType('delphi')
+        setScaleInstructions('')
+        setScoringSystem('')
         fetchProjects()
       } else {
         const data = await res.json()
@@ -292,6 +298,39 @@ function HomePage({ user, onLogout, onProjectSelect }) {
                   style={{ fontFamily: 'monospace' }}
                 />
               </div>
+
+              {projectType === 'face-validity' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-blue-400 mb-1" style={{ fontFamily: 'monospace' }}>
+                      SCALE INSTRUCTIONS (OPTIONAL)
+                    </label>
+                    <textarea
+                      value={scaleInstructions}
+                      onChange={(e) => setScaleInstructions(e.target.value)}
+                      className="w-full px-4 py-2 bg-black border-2 border-blue-400 rounded text-blue-400 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 placeholder-blue-700"
+                      placeholder="Enter instructions for the scale (e.g., how to use the scale, what it measures)"
+                      rows={3}
+                      style={{ fontFamily: 'monospace' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-blue-400 mb-1" style={{ fontFamily: 'monospace' }}>
+                      SCORING SYSTEM (OPTIONAL)
+                    </label>
+                    <textarea
+                      value={scoringSystem}
+                      onChange={(e) => setScoringSystem(e.target.value)}
+                      className="w-full px-4 py-2 bg-black border-2 border-blue-400 rounded text-blue-400 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 placeholder-blue-700"
+                      placeholder="Enter scoring system details (e.g., 1=Strongly Disagree, 5=Strongly Agree)"
+                      rows={3}
+                      style={{ fontFamily: 'monospace' }}
+                    />
+                  </div>
+                </>
+              )}
+
               <div className="flex gap-2">
                 <button
                   type="submit"

@@ -21,6 +21,7 @@ function ExpertAssessment({ projectId }) {
   const [expertEmail, setExpertEmail] = useState('')
   const [expertQualification, setExpertQualification] = useState('')
   const [expertYearsOfExperience, setExpertYearsOfExperience] = useState('')
+  const [expertRemarks, setExpertRemarks] = useState('')
   const [responses, setResponses] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
@@ -153,6 +154,7 @@ function ExpertAssessment({ projectId }) {
           expertEmail,
           expertQualification,
           expertYearsOfExperience: parseInt(expertYearsOfExperience),
+          expertRemarks,
           responses
         })
       })
@@ -344,6 +346,30 @@ function ExpertAssessment({ projectId }) {
             </div>
           </div>
 
+          {/* Scale Instructions (if provided) */}
+          {project.scaleInstructions && (
+            <div className="bg-black bg-opacity-80 border-2 border-green-500 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00FF00' }}>
+                📋 SCALE INSTRUCTIONS
+              </h2>
+              <div className="text-white whitespace-pre-wrap" style={{ fontFamily: 'monospace', lineHeight: '1.8' }}>
+                {project.scaleInstructions}
+              </div>
+            </div>
+          )}
+
+          {/* Scoring System (if provided) */}
+          {project.scoringSystem && (
+            <div className="bg-black bg-opacity-80 border-2 border-green-500 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00FF00' }}>
+                📊 SCORING SYSTEM
+              </h2>
+              <div className="text-white whitespace-pre-wrap" style={{ fontFamily: 'monospace', lineHeight: '1.8' }}>
+                {project.scoringSystem}
+              </div>
+            </div>
+          )}
+
           {/* Original Scale Items */}
           <div className="bg-black bg-opacity-80 border-2 border-blue-500 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
@@ -457,6 +483,24 @@ function ExpertAssessment({ projectId }) {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Expert Remarks */}
+          <div className="bg-black bg-opacity-80 border-2 border-yellow-500 rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #FFD700' }}>
+              💬 EXPERT REMARKS (OPTIONAL)
+            </h2>
+            <p className="text-yellow-300 mb-4" style={{ fontFamily: 'monospace' }}>
+              Please provide any additional comments, suggestions, or observations about the scale, items, or translation quality.
+            </p>
+            <textarea
+              value={expertRemarks}
+              onChange={(e) => setExpertRemarks(e.target.value)}
+              className="w-full px-4 py-3 bg-black border-2 border-yellow-500 rounded text-white focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 placeholder-yellow-700"
+              placeholder="Enter your remarks here..."
+              rows={6}
+              style={{ fontFamily: 'monospace' }}
+            />
           </div>
 
           {/* Submit Button */}

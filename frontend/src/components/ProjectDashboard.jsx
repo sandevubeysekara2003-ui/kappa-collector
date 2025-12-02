@@ -1435,6 +1435,49 @@ function ProjectDashboard({ project, user, onBack }) {
                           ))}
                         </div>
                       </div>
+
+                      {/* Expert Remarks Section */}
+                      {expertResponses.some(expert => expert.expertRemarks) && (
+                        <div className="mt-6 bg-yellow-900 bg-opacity-20 border-2 border-yellow-500 rounded-lg p-6">
+                          <h3 className="text-2xl font-bold text-yellow-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #FFD700' }}>
+                            💬 EXPERT REMARKS
+                          </h3>
+                          <div className="space-y-4">
+                            {expertResponses.map((expert, idx) => (
+                              expert.expertRemarks && (
+                                <div key={idx} className="bg-black bg-opacity-60 border-2 border-yellow-600 rounded-lg p-4">
+                                  <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0">
+                                      <div className="w-12 h-12 bg-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-xl" style={{ fontFamily: 'monospace' }}>
+                                        {expert.expertName.charAt(0).toUpperCase()}
+                                      </div>
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <h4 className="text-yellow-300 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
+                                          {expert.expertName}
+                                        </h4>
+                                        <span className="text-yellow-500 text-xs" style={{ fontFamily: 'monospace' }}>
+                                          {expert.expertQualification}
+                                        </span>
+                                        <span className="text-yellow-600 text-xs" style={{ fontFamily: 'monospace' }}>
+                                          {expert.expertYearsOfExperience} years exp.
+                                        </span>
+                                      </div>
+                                      <p className="text-yellow-100 whitespace-pre-wrap" style={{ fontFamily: 'monospace', lineHeight: '1.6' }}>
+                                        {expert.expertRemarks}
+                                      </p>
+                                      <p className="text-yellow-600 text-xs mt-2" style={{ fontFamily: 'monospace' }}>
+                                        Submitted: {new Date(expert.submittedAt).toLocaleString()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     ) : (
                       <div className="text-center py-12">
