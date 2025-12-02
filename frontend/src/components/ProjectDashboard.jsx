@@ -44,7 +44,7 @@ function ProjectDashboard({ project, user, onBack }) {
 
   // Fetch expert responses when evaluation tab is active
   useEffect(() => {
-    if (activeSubTab === 'evaluation' && project.type === 'face-validity') {
+    if (activeSubTab === 'evaluation') {
       const fetchExpertResponses = async () => {
         try {
           const token = localStorage.getItem('token')
@@ -63,7 +63,7 @@ function ProjectDashboard({ project, user, onBack }) {
       }
       fetchExpertResponses()
     }
-  }, [activeSubTab, project.id, project.type])
+  }, [activeSubTab, project.id])
 
   // Save scale items to backend whenever they change
   useEffect(() => {
@@ -1500,24 +1500,47 @@ function ProjectDashboard({ project, user, onBack }) {
 
           {activeTab === 'delphi' && (
             <div className="space-y-6">
-              <div className="bg-black bg-opacity-80 border-2 border-blue-400 rounded-lg p-6 backdrop-blur-sm" style={{ boxShadow: '0 0 20px rgba(0, 191, 255, 0.3)' }}>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-3xl font-bold text-blue-400 mb-2" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
-                      DELPHI METHOD ASSESSMENT
-                    </h2>
-                    <p className="text-blue-300" style={{ fontFamily: 'monospace' }}>
-                      Upload Word/PDF documents to automatically extract items, or add them manually.
-                    </p>
-                  </div>
+              {/* Sub-tabs for Delphi */}
+              <div className="bg-black bg-opacity-80 border-b-2 border-blue-400 backdrop-blur-sm">
+                <div className="flex gap-4">
                   <button
-                    onClick={generateInviteLink}
-                    className="bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-500 transition border-2 border-green-600"
-                    style={{ fontFamily: 'monospace', boxShadow: '0 0 10px rgba(34, 197, 94, 0.5)' }}
+                    onClick={() => setActiveSubTab('scales')}
+                    className={`px-6 py-3 font-bold border-b-2 transition ${activeSubTab === 'scales' ? 'border-blue-400 text-blue-400' : 'border-transparent text-blue-600 hover:text-blue-400'}`}
+                    style={{ fontFamily: 'monospace', textShadow: activeSubTab === 'scales' ? '0 0 5px #00BFFF' : 'none' }}
                   >
-                    📧 INVITE EXPERTS
+                    SCALES
+                  </button>
+                  <button
+                    onClick={() => setActiveSubTab('evaluation')}
+                    className={`px-6 py-3 font-bold border-b-2 transition ${activeSubTab === 'evaluation' ? 'border-blue-400 text-blue-400' : 'border-transparent text-blue-600 hover:text-blue-400'}`}
+                    style={{ fontFamily: 'monospace', textShadow: activeSubTab === 'evaluation' ? '0 0 5px #00BFFF' : 'none' }}
+                  >
+                    DELPHI EVALUATION
                   </button>
                 </div>
+              </div>
+
+              {/* Scales Sub-tab */}
+              {activeSubTab === 'scales' && (
+                <>
+                  <div className="bg-black bg-opacity-80 border-2 border-blue-400 rounded-lg p-6 backdrop-blur-sm" style={{ boxShadow: '0 0 20px rgba(0, 191, 255, 0.3)' }}>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h2 className="text-3xl font-bold text-blue-400 mb-2" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #00BFFF' }}>
+                          DELPHI METHOD ASSESSMENT
+                        </h2>
+                        <p className="text-blue-300" style={{ fontFamily: 'monospace' }}>
+                          Upload Word/PDF documents to automatically extract items, or add them manually.
+                        </p>
+                      </div>
+                      <button
+                        onClick={generateInviteLink}
+                        className="bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-500 transition border-2 border-green-600"
+                        style={{ fontFamily: 'monospace', boxShadow: '0 0 10px rgba(34, 197, 94, 0.5)' }}
+                      >
+                        📧 INVITE EXPERTS
+                      </button>
+                    </div>
                 {inviteLink && (
                   <div className="mt-4 p-4 bg-green-900 bg-opacity-30 border-2 border-green-500 rounded">
                     <p className="text-green-400 font-bold mb-2" style={{ fontFamily: 'monospace' }}>
@@ -1666,6 +1689,195 @@ function ProjectDashboard({ project, user, onBack }) {
                   </div>
                 </div>
               </div>
+                </>
+              )}
+
+              {/* Delphi Evaluation Sub-tab */}
+              {activeSubTab === 'evaluation' && (
+                <div className="bg-black bg-opacity-80 border-2 border-orange-400 rounded-lg p-6 backdrop-blur-sm" style={{ boxShadow: '0 0 20px rgba(251, 146, 60, 0.3)' }}>
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <h2 className="text-3xl font-bold text-orange-400" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #FB923C' }}>
+                        DELPHI EVALUATION RESULTS
+                      </h2>
+                      <p className="text-orange-300 mt-2" style={{ fontFamily: 'monospace' }}>
+                        View expert ratings (1-9 scale) for each validation criterion
+                      </p>
+                    </div>
+                    <button
+                      onClick={downloadAPAReport}
+                      className="bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-500 transition border-2 border-green-600"
+                      style={{ fontFamily: 'monospace', boxShadow: '0 0 10px rgba(34, 197, 94, 0.5)' }}
+                    >
+                      📥 DOWNLOAD REPORT
+                    </button>
+                  </div>
+
+                  {expertResponses.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-orange-400 text-lg" style={{ fontFamily: 'monospace' }}>
+                        No expert responses yet. Invite experts to submit their Delphi evaluations.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Expert Information Table */}
+                      <div className="overflow-x-auto">
+                        <h3 className="text-xl font-bold text-orange-400 mb-3" style={{ fontFamily: 'monospace' }}>
+                          EXPERT PANEL
+                        </h3>
+                        <table className="w-full border-2 border-orange-500">
+                          <thead>
+                            <tr className="bg-orange-900 bg-opacity-50">
+                              <th className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>Name</th>
+                              <th className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>Email</th>
+                              <th className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>Qualification</th>
+                              <th className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>Years Exp</th>
+                              <th className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>Submitted</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {expertResponses.map((expert, idx) => (
+                              <tr key={idx} className="bg-black bg-opacity-60">
+                                <td className="border-2 border-orange-500 p-3 text-white" style={{ fontFamily: 'monospace' }}>{expert.expertName}</td>
+                                <td className="border-2 border-orange-500 p-3 text-white" style={{ fontFamily: 'monospace' }}>{expert.expertEmail}</td>
+                                <td className="border-2 border-orange-500 p-3 text-white" style={{ fontFamily: 'monospace' }}>{expert.expertQualification}</td>
+                                <td className="border-2 border-orange-500 p-3 text-white" style={{ fontFamily: 'monospace' }}>{expert.expertYearsOfExperience}</td>
+                                <td className="border-2 border-orange-500 p-3 text-white" style={{ fontFamily: 'monospace' }}>
+                                  {new Date(expert.submittedAt).toLocaleString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Delphi Criteria Legend */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-purple-900 bg-opacity-20 border-2 border-purple-500 rounded-lg p-4">
+                          <h4 className="text-lg font-bold text-purple-400 mb-2" style={{ fontFamily: 'monospace' }}>
+                            Content-related validation
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            <p className="text-white" style={{ fontFamily: 'monospace' }}><span className="text-purple-400 font-bold">C1:</span> Appropriateness of language used</p>
+                            <p className="text-white" style={{ fontFamily: 'monospace' }}><span className="text-purple-400 font-bold">C2:</span> Assessment of the concept</p>
+                            <p className="text-white" style={{ fontFamily: 'monospace' }}><span className="text-purple-400 font-bold">C3:</span> Retains the conceptual meaning</p>
+                          </div>
+                        </div>
+                        <div className="bg-pink-900 bg-opacity-20 border-2 border-pink-500 rounded-lg p-4">
+                          <h4 className="text-lg font-bold text-pink-400 mb-2" style={{ fontFamily: 'monospace' }}>
+                            Consensual-related validation
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            <p className="text-white" style={{ fontFamily: 'monospace' }}><span className="text-pink-400 font-bold">C4:</span> Appropriateness with individuals 18+ years</p>
+                            <p className="text-white" style={{ fontFamily: 'monospace' }}><span className="text-pink-400 font-bold">C5:</span> Cultural relevance</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Delphi Ratings Table */}
+                      <div className="overflow-x-auto">
+                        <h3 className="text-xl font-bold text-orange-400 mb-3" style={{ fontFamily: 'monospace' }}>
+                          EXPERT RATINGS (1-9 Scale)
+                        </h3>
+                        <table className="w-full border-2 border-orange-500 text-sm">
+                          <thead>
+                            <tr className="bg-orange-900 bg-opacity-50">
+                              <th rowSpan="2" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
+                                Item
+                              </th>
+                              <th rowSpan="2" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
+                                Expert
+                              </th>
+                              <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
+                                Content-related
+                              </th>
+                              <th colSpan="2" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
+                                Consensual-related
+                              </th>
+                            </tr>
+                            <tr className="bg-orange-900 bg-opacity-30">
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C1</th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C2</th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C3</th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C4</th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C5</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {translatedScaleItems.map((item, itemIdx) => (
+                              expertResponses.map((expert, expertIdx) => (
+                                <tr key={`${itemIdx}-${expertIdx}`} className="bg-black bg-opacity-60">
+                                  {expertIdx === 0 && (
+                                    <td rowSpan={expertResponses.length} className="border-2 border-orange-500 p-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
+                                      Item {itemIdx + 1}
+                                    </td>
+                                  )}
+                                  <td className="border-2 border-orange-500 p-2 text-white" style={{ fontFamily: 'monospace' }}>
+                                    {expert.expertName}
+                                  </td>
+                                  {[1, 2, 3, 4, 5].map(criteriaId => {
+                                    const key = `item${itemIdx}_criteria${criteriaId}`
+                                    const rating = expert.responses[key]
+                                    return (
+                                      <td key={criteriaId} className="border-2 border-orange-500 p-2 text-center text-white font-bold" style={{ fontFamily: 'monospace' }}>
+                                        {rating || '-'}
+                                      </td>
+                                    )
+                                  })}
+                                </tr>
+                              ))
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Expert Remarks Section */}
+                      {expertResponses.some(expert => expert.expertRemarks) && (
+                        <div className="mt-6 bg-yellow-900 bg-opacity-20 border-2 border-yellow-500 rounded-lg p-6">
+                          <h3 className="text-2xl font-bold text-yellow-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #FFD700' }}>
+                            💬 EXPERT REMARKS
+                          </h3>
+                          <div className="space-y-4">
+                            {expertResponses.map((expert, idx) => (
+                              expert.expertRemarks && (
+                                <div key={idx} className="bg-black bg-opacity-60 border-2 border-yellow-600 rounded-lg p-4">
+                                  <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0">
+                                      <div className="w-12 h-12 bg-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-xl" style={{ fontFamily: 'monospace' }}>
+                                        {expert.expertName.charAt(0).toUpperCase()}
+                                      </div>
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <h4 className="text-yellow-300 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
+                                          {expert.expertName}
+                                        </h4>
+                                        <span className="text-yellow-500 text-xs" style={{ fontFamily: 'monospace' }}>
+                                          {expert.expertQualification}
+                                        </span>
+                                        <span className="text-yellow-600 text-xs" style={{ fontFamily: 'monospace' }}>
+                                          {expert.expertYearsOfExperience} years exp.
+                                        </span>
+                                      </div>
+                                      <p className="text-yellow-100 whitespace-pre-wrap" style={{ fontFamily: 'monospace', lineHeight: '1.6' }}>
+                                        {expert.expertRemarks}
+                                      </p>
+                                      <p className="text-yellow-600 text-xs mt-2" style={{ fontFamily: 'monospace' }}>
+                                        Submitted: {new Date(expert.submittedAt).toLocaleString()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
