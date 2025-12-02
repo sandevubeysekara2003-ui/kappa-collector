@@ -1847,60 +1847,98 @@ function ProjectDashboard({ project, user, onBack }) {
                         </div>
                       </div>
 
-                      {/* Delphi Ratings Table - Aggregated Percentages */}
+                      {/* Delphi Ratings Table - Aggregated Percentages by Rating Categories */}
                       <div className="overflow-x-auto">
                         <h3 className="text-xl font-bold text-orange-400 mb-3" style={{ fontFamily: 'monospace' }}>
-                          AGGREGATED EXPERT RATINGS (Percentages from All Experts)
+                          AGGREGATED EXPERT RATINGS (Percentages by Rating Categories)
                         </h3>
                         <table className="w-full border-2 border-orange-500 text-sm">
                           <thead>
                             <tr className="bg-orange-900 bg-opacity-50">
-                              <th rowSpan="2" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
+                              <th rowSpan="3" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
                                 Item
                               </th>
-                              <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
+                              <th colSpan="9" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
                                 Content-related validation
                               </th>
-                              <th colSpan="2" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
+                              <th colSpan="6" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
                                 Consensual-related validation
                               </th>
                             </tr>
-                            <tr className="bg-orange-900 bg-opacity-30">
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                            <tr className="bg-orange-900 bg-opacity-40">
+                              <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
                                 Appropriateness of language used
                               </th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                              <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
                                 Assessment of the concept
                               </th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                              <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
                                 Retains the conceptual meaning
                               </th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
-                                Appropriateness with the individuals of 18 years and above
+                              <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                                Appropriateness with individuals 18+
                               </th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                              <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
                                 Cultural relevance
                               </th>
+                            </tr>
+                            <tr className="bg-orange-900 bg-opacity-30">
+                              {/* C1 */}
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>0-3</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>4-6</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>7-9</th>
+                              {/* C2 */}
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>0-3</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>4-6</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>7-9</th>
+                              {/* C3 */}
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>0-3</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>4-6</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>7-9</th>
+                              {/* C4 */}
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>0-3</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>4-6</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>7-9</th>
+                              {/* C5 */}
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>0-3</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>4-6</th>
+                              <th className="border-2 border-orange-500 p-1 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>7-9</th>
                             </tr>
                           </thead>
                           <tbody>
                             {translatedScaleItems.map((item, itemIdx) => {
-                              // Calculate aggregated percentages for this item
-                              const calculatePercentage = (criteriaId) => {
+                              // Calculate percentages by rating categories for this item
+                              const calculateCategoryPercentages = (criteriaId) => {
                                 const key = `item${itemIdx}_criteria${criteriaId}`
                                 const totalExperts = expertResponses.length
-                                if (totalExperts === 0) return '0%'
+                                if (totalExperts === 0) return { low: '0%', medium: '0%', high: '0%' }
 
-                                // Sum all ratings for this item-criteria combination
-                                const totalScore = expertResponses.reduce((sum, expert) => {
+                                // Count ratings in each category
+                                let lowCount = 0    // 0-3
+                                let mediumCount = 0 // 4-6
+                                let highCount = 0   // 7-9
+
+                                expertResponses.forEach(expert => {
                                   const rating = expert.responses[key] || 0
-                                  return sum + rating
-                                }, 0)
+                                  if (rating >= 0 && rating <= 3) {
+                                    lowCount++
+                                  } else if (rating >= 4 && rating <= 6) {
+                                    mediumCount++
+                                  } else if (rating >= 7 && rating <= 9) {
+                                    highCount++
+                                  }
+                                })
 
-                                // Calculate percentage (total score / max possible score * 100)
-                                const maxPossibleScore = totalExperts * 9 // 9 is the max rating
-                                const percentage = (totalScore / maxPossibleScore * 100).toFixed(1)
-                                return `${percentage}%`
+                                // Calculate percentages
+                                const lowPercent = ((lowCount / totalExperts) * 100).toFixed(1)
+                                const mediumPercent = ((mediumCount / totalExperts) * 100).toFixed(1)
+                                const highPercent = ((highCount / totalExperts) * 100).toFixed(1)
+
+                                return {
+                                  low: `${lowPercent}%`,
+                                  medium: `${mediumPercent}%`,
+                                  high: `${highPercent}%`
+                                }
                               }
 
                               return (
@@ -1908,21 +1946,37 @@ function ProjectDashboard({ project, user, onBack }) {
                                   <td className="border-2 border-orange-500 p-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
                                     Item {itemIdx + 1}
                                   </td>
-                                  {[1, 2, 3, 4, 5].map(criteriaId => (
-                                    <td key={criteriaId} className="border-2 border-orange-500 p-2 text-center">
-                                      <div className="text-orange-300 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
-                                        {calculatePercentage(criteriaId)}
-                                      </div>
-                                    </td>
-                                  ))}
+                                  {[1, 2, 3, 4, 5].map(criteriaId => {
+                                    const percentages = calculateCategoryPercentages(criteriaId)
+                                    return (
+                                      <>
+                                        <td key={`${criteriaId}-low`} className="border-2 border-orange-500 p-2 text-center">
+                                          <div className="text-red-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                            {percentages.low}
+                                          </div>
+                                        </td>
+                                        <td key={`${criteriaId}-medium`} className="border-2 border-orange-500 p-2 text-center">
+                                          <div className="text-yellow-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                            {percentages.medium}
+                                          </div>
+                                        </td>
+                                        <td key={`${criteriaId}-high`} className="border-2 border-orange-500 p-2 text-center">
+                                          <div className="text-green-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                            {percentages.high}
+                                          </div>
+                                        </td>
+                                      </>
+                                    )
+                                  })}
                                 </tr>
                               )
                             })}
                           </tbody>
                         </table>
                         <div className="mt-4 text-orange-300 text-sm" style={{ fontFamily: 'monospace' }}>
-                          <p>📊 Percentage Calculation: (Sum of all expert ratings / Maximum possible score) × 100</p>
-                          <p className="mt-1">Example: If 3 experts rate an item as 7, 8, 9 → (7+8+9)/(3×9) × 100 = 88.9%</p>
+                          <p>📊 Percentage Calculation: (Number of experts in category / Total experts) × 100</p>
+                          <p className="mt-1">🔴 <span className="text-red-400">0-3</span> = Low | 🟡 <span className="text-yellow-400">4-6</span> = Medium | 🟢 <span className="text-green-400">7-9</span> = High</p>
+                          <p className="mt-1">Example: If 10 experts rate an item - 1 gives 2, 3 give 5, 6 give 8 → Low: 10%, Medium: 30%, High: 60%</p>
                         </div>
                       </div>
 
