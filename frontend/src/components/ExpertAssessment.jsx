@@ -572,7 +572,7 @@ function ExpertAssessment({ projectId }) {
                   <thead>
                     <tr className="bg-orange-900 bg-opacity-50">
                       <th rowSpan="2" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
-                        Items in HWIS E
+                        Item
                       </th>
                       <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
                         Content-related validation

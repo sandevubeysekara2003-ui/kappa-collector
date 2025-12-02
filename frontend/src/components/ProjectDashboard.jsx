@@ -1689,6 +1689,78 @@ function ProjectDashboard({ project, user, onBack }) {
                   </div>
                 </div>
               </div>
+
+              {/* Delphi Evaluation Table Preview */}
+              <div className="bg-black bg-opacity-80 border-2 border-orange-400 rounded-lg p-6 backdrop-blur-sm" style={{ boxShadow: '0 0 20px rgba(251, 146, 60, 0.3)' }}>
+                <h3 className="text-2xl font-bold text-orange-400 mb-4" style={{ fontFamily: 'monospace', textShadow: '0 0 10px #FB923C' }}>
+                  DELPHI EVALUATION TABLE PREVIEW
+                </h3>
+                <p className="text-orange-300 mb-4" style={{ fontFamily: 'monospace' }}>
+                  This is how experts will rate each item on a scale of 1-9:
+                </p>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-2 border-orange-500 text-sm">
+                    <thead>
+                      <tr className="bg-orange-900 bg-opacity-50">
+                        <th rowSpan="2" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
+                          Item
+                        </th>
+                        <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
+                          Content-related validation
+                        </th>
+                        <th colSpan="2" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
+                          Consensual-related validation
+                        </th>
+                      </tr>
+                      <tr className="bg-orange-900 bg-opacity-30">
+                        <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                          Appropriateness of language used
+                        </th>
+                        <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                          Assessment of the concept
+                        </th>
+                        <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                          Retains the conceptual meaning
+                        </th>
+                        <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                          Appropriateness with the individuals of 18 years and above
+                        </th>
+                        <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                          Cultural relevance
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {translatedScaleItems.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="border-2 border-orange-500 p-8 text-center text-orange-300" style={{ fontFamily: 'monospace' }}>
+                            Add translated scale items above to see the evaluation table
+                          </td>
+                        </tr>
+                      ) : (
+                        translatedScaleItems.map((item, itemIdx) => (
+                          <tr key={item.id} className="border-b border-orange-700 bg-black bg-opacity-60">
+                            <td className="border-2 border-orange-500 p-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
+                              Item {itemIdx + 1}
+                            </td>
+                            {[1, 2, 3, 4, 5].map(criteriaId => (
+                              <td key={criteriaId} className="border-2 border-orange-500 p-2 text-center">
+                                <div className="text-orange-400 text-xs" style={{ fontFamily: 'monospace' }}>
+                                  1-9
+                                </div>
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-4 text-orange-300 text-sm" style={{ fontFamily: 'monospace' }}>
+                  <p>📊 Rating Scale: 1 = Strongly Disagree / Not Appropriate, 9 = Strongly Agree / Highly Appropriate</p>
+                </div>
+              </div>
                 </>
               )}
 
