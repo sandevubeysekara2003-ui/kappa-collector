@@ -1847,10 +1847,10 @@ function ProjectDashboard({ project, user, onBack }) {
                         </div>
                       </div>
 
-                      {/* Delphi Ratings Table */}
+                      {/* Delphi Ratings Table - Aggregated Percentages */}
                       <div className="overflow-x-auto">
                         <h3 className="text-xl font-bold text-orange-400 mb-3" style={{ fontFamily: 'monospace' }}>
-                          EXPERT RATINGS (1-9 Scale)
+                          AGGREGATED EXPERT RATINGS (Percentages from All Experts)
                         </h3>
                         <table className="w-full border-2 border-orange-500 text-sm">
                           <thead>
@@ -1858,50 +1858,72 @@ function ProjectDashboard({ project, user, onBack }) {
                               <th rowSpan="2" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
                                 Item
                               </th>
-                              <th rowSpan="2" className="border-2 border-orange-500 p-3 text-white text-left" style={{ fontFamily: 'monospace' }}>
-                                Expert
-                              </th>
                               <th colSpan="3" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
-                                Content-related
+                                Content-related validation
                               </th>
                               <th colSpan="2" className="border-2 border-orange-500 p-2 text-center text-white" style={{ fontFamily: 'monospace' }}>
-                                Consensual-related
+                                Consensual-related validation
                               </th>
                             </tr>
                             <tr className="bg-orange-900 bg-opacity-30">
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C1</th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C2</th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C3</th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C4</th>
-                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>C5</th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                                Appropriateness of language used
+                              </th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                                Assessment of the concept
+                              </th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                                Retains the conceptual meaning
+                              </th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                                Appropriateness with the individuals of 18 years and above
+                              </th>
+                              <th className="border-2 border-orange-500 p-2 text-center text-white text-xs" style={{ fontFamily: 'monospace' }}>
+                                Cultural relevance
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
-                            {translatedScaleItems.map((item, itemIdx) => (
-                              expertResponses.map((expert, expertIdx) => (
-                                <tr key={`${itemIdx}-${expertIdx}`} className="bg-black bg-opacity-60">
-                                  {expertIdx === 0 && (
-                                    <td rowSpan={expertResponses.length} className="border-2 border-orange-500 p-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
-                                      Item {itemIdx + 1}
-                                    </td>
-                                  )}
-                                  <td className="border-2 border-orange-500 p-2 text-white" style={{ fontFamily: 'monospace' }}>
-                                    {expert.expertName}
+                            {translatedScaleItems.map((item, itemIdx) => {
+                              // Calculate aggregated percentages for this item
+                              const calculatePercentage = (criteriaId) => {
+                                const key = `item${itemIdx}_criteria${criteriaId}`
+                                const totalExperts = expertResponses.length
+                                if (totalExperts === 0) return '0%'
+
+                                // Sum all ratings for this item-criteria combination
+                                const totalScore = expertResponses.reduce((sum, expert) => {
+                                  const rating = expert.responses[key] || 0
+                                  return sum + rating
+                                }, 0)
+
+                                // Calculate percentage (total score / max possible score * 100)
+                                const maxPossibleScore = totalExperts * 9 // 9 is the max rating
+                                const percentage = (totalScore / maxPossibleScore * 100).toFixed(1)
+                                return `${percentage}%`
+                              }
+
+                              return (
+                                <tr key={itemIdx} className="border-b border-orange-700 bg-black bg-opacity-60">
+                                  <td className="border-2 border-orange-500 p-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
+                                    Item {itemIdx + 1}
                                   </td>
-                                  {[1, 2, 3, 4, 5].map(criteriaId => {
-                                    const key = `item${itemIdx}_criteria${criteriaId}`
-                                    const rating = expert.responses[key]
-                                    return (
-                                      <td key={criteriaId} className="border-2 border-orange-500 p-2 text-center text-white font-bold" style={{ fontFamily: 'monospace' }}>
-                                        {rating || '-'}
-                                      </td>
-                                    )
-                                  })}
+                                  {[1, 2, 3, 4, 5].map(criteriaId => (
+                                    <td key={criteriaId} className="border-2 border-orange-500 p-2 text-center">
+                                      <div className="text-orange-300 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
+                                        {calculatePercentage(criteriaId)}
+                                      </div>
+                                    </td>
+                                  ))}
                                 </tr>
-                              ))
-                            ))}
+                              )
+                            })}
                           </tbody>
                         </table>
+                        <div className="mt-4 text-orange-300 text-sm" style={{ fontFamily: 'monospace' }}>
+                          <p>📊 Percentage Calculation: (Sum of all expert ratings / Maximum possible score) × 100</p>
+                          <p className="mt-1">Example: If 3 experts rate an item as 7, 8, 9 → (7+8+9)/(3×9) × 100 = 88.9%</p>
+                        </div>
                       </div>
 
                       {/* Expert Remarks Section */}
