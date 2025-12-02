@@ -26,9 +26,13 @@ function App() {
       setCurrentPage('expert-assessment')
       setIsLoading(false)
     } else {
-      // Clear any old tokens and start fresh
-      localStorage.removeItem('token')
-      setIsLoading(false)
+      // Check if user has a valid token
+      const token = localStorage.getItem('token')
+      if (token) {
+        fetchUserData(token)
+      } else {
+        setIsLoading(false)
+      }
     }
   }, [])
 
@@ -39,7 +43,8 @@ function App() {
       })
       if (res.ok) {
         const data = await res.json()
-        setUser(data.user)
+        // Backend returns user object directly, not wrapped in { user: ... }
+        setUser(data)
         setCurrentPage('home')
       } else {
         localStorage.removeItem('token')
