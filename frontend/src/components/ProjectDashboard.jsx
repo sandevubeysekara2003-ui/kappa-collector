@@ -1849,6 +1849,17 @@ function ProjectDashboard({ project, user, onBack }) {
 
                       {/* Delphi Ratings Table - Aggregated Percentages by Rating Categories */}
                       <div className="overflow-x-auto">
+                        <div className="mb-4 bg-blue-900 bg-opacity-20 border-2 border-blue-500 rounded-lg p-4">
+                          <h4 className="text-lg font-bold text-blue-400 mb-2" style={{ fontFamily: 'monospace' }}>
+                            📊 DELPHI METHODOLOGY - AGGREGATED CONSENSUS
+                          </h4>
+                          <p className="text-blue-200 text-sm" style={{ fontFamily: 'monospace', lineHeight: '1.6' }}>
+                            This evaluation database records individual assessments from <span className="text-blue-400 font-bold">{expertResponses.length} expert{expertResponses.length !== 1 ? 's' : ''}</span> during the Delphi process.
+                            The table below displays <span className="text-blue-400 font-bold">aggregated percentage scores</span> from all experts for each item,
+                            providing a consolidated view of expert consensus. The structure mirrors the Assessment Form, and values
+                            <span className="text-green-400 font-bold"> update automatically</span> as additional expert evaluations are added.
+                          </p>
+                        </div>
                         <h3 className="text-xl font-bold text-orange-400 mb-3" style={{ fontFamily: 'monospace' }}>
                           AGGREGATED EXPERT RATINGS (Percentages by Rating Categories)
                         </h3>
@@ -1973,12 +1984,60 @@ function ProjectDashboard({ project, user, onBack }) {
                             })}
                           </tbody>
                         </table>
-                        <div className="mt-4 text-orange-300 text-sm" style={{ fontFamily: 'monospace' }}>
-                          <p>📊 Percentage Calculation: (Number of experts in category / Total experts) × 100</p>
-                          <p className="mt-1">🔴 <span className="text-red-400">0-3</span> = Low | 🟡 <span className="text-yellow-400">4-6</span> = Medium | 🟢 <span className="text-green-400">7-9</span> = High</p>
-                          <p className="mt-1">Example: If 10 experts rate an item - 1 gives 2, 3 give 5, 6 give 8 → Low: 10%, Medium: 30%, High: 60%</p>
+                        <div className="mt-4 bg-gray-900 bg-opacity-50 border-2 border-gray-600 rounded-lg p-4">
+                          <h4 className="text-lg font-bold text-gray-300 mb-3" style={{ fontFamily: 'monospace' }}>
+                            📈 INTERPRETATION GUIDE
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <div className="bg-red-900 bg-opacity-20 border border-red-500 rounded p-3">
+                              <div className="text-red-400 font-bold text-sm mb-1" style={{ fontFamily: 'monospace' }}>🔴 LOW (0-3)</div>
+                              <p className="text-red-200 text-xs" style={{ fontFamily: 'monospace' }}>Indicates disagreement or low appropriateness</p>
+                            </div>
+                            <div className="bg-yellow-900 bg-opacity-20 border border-yellow-500 rounded p-3">
+                              <div className="text-yellow-400 font-bold text-sm mb-1" style={{ fontFamily: 'monospace' }}>🟡 MEDIUM (4-6)</div>
+                              <p className="text-yellow-200 text-xs" style={{ fontFamily: 'monospace' }}>Indicates moderate agreement or neutral stance</p>
+                            </div>
+                            <div className="bg-green-900 bg-opacity-20 border border-green-500 rounded p-3">
+                              <div className="text-green-400 font-bold text-sm mb-1" style={{ fontFamily: 'monospace' }}>🟢 HIGH (7-9)</div>
+                              <p className="text-green-200 text-xs" style={{ fontFamily: 'monospace' }}>Indicates strong agreement or high appropriateness</p>
+                            </div>
+                          </div>
+                          <div className="text-orange-300 text-sm space-y-1" style={{ fontFamily: 'monospace' }}>
+                            <p><span className="text-orange-400 font-bold">Formula:</span> Percentage = (Number of experts in category / Total experts) × 100</p>
+                            <p><span className="text-orange-400 font-bold">Example:</span> If 10 experts rate an item - 1 gives 2, 3 give 5, 6 give 8 → Low: 10%, Medium: 30%, High: 60%</p>
+                            <p className="text-green-400"><span className="font-bold">✓ Auto-Update:</span> Percentages recalculate automatically when new expert responses are submitted</p>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Consensus Summary Statistics */}
+                      {expertResponses.length > 0 && translatedScaleItems.length > 0 && (
+                        <div className="mt-6 bg-gradient-to-r from-blue-900 to-purple-900 bg-opacity-30 border-2 border-blue-400 rounded-lg p-5">
+                          <h3 className="text-xl font-bold text-blue-300 mb-4" style={{ fontFamily: 'monospace' }}>
+                            📊 CONSENSUS SUMMARY
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="bg-black bg-opacity-40 border border-blue-500 rounded-lg p-4">
+                              <div className="text-blue-400 text-sm mb-1" style={{ fontFamily: 'monospace' }}>Total Experts</div>
+                              <div className="text-white text-3xl font-bold" style={{ fontFamily: 'monospace' }}>{expertResponses.length}</div>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-orange-500 rounded-lg p-4">
+                              <div className="text-orange-400 text-sm mb-1" style={{ fontFamily: 'monospace' }}>Total Items</div>
+                              <div className="text-white text-3xl font-bold" style={{ fontFamily: 'monospace' }}>{translatedScaleItems.length}</div>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-green-500 rounded-lg p-4">
+                              <div className="text-green-400 text-sm mb-1" style={{ fontFamily: 'monospace' }}>Total Evaluations</div>
+                              <div className="text-white text-3xl font-bold" style={{ fontFamily: 'monospace' }}>
+                                {expertResponses.length * translatedScaleItems.length * 5}
+                              </div>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-purple-500 rounded-lg p-4">
+                              <div className="text-purple-400 text-sm mb-1" style={{ fontFamily: 'monospace' }}>Criteria Assessed</div>
+                              <div className="text-white text-3xl font-bold" style={{ fontFamily: 'monospace' }}>5</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Expert Remarks Section */}
                       {expertResponses.some(expert => expert.expertRemarks) && (
