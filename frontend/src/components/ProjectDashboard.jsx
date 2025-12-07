@@ -456,49 +456,41 @@ function ProjectDashboard({ project, user, onBack }) {
         const key = `item${itemIdx}_criteria${criteria.id}`
         const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
         const highRatings = ratings.filter(r => r >= 7).length
-        const icvi = (highRatings / expertResponses.length).toFixed(2)
+        const icvi = (highRatings / expertResponses.length).toFixed(1)
         icviCells.push(new TableCell({ children: [new Paragraph(icvi)], columnSpan: 3 }))
       })
       tableRows.push(new TableRow({ children: icviCells }))
 
-      // Median row
-      const medianCells = [new TableCell({ children: [new Paragraph({ text: 'Median', bold: true })], shading: { fill: 'F0E6FF' } })]
+      // M / SD / Coef. Var row
+      const descriptivesCells = [new TableCell({ children: [new Paragraph({ text: 'M / SD / Coef. Var', bold: true })], shading: { fill: 'F5F5F5' } })]
       DELPHI_CRITERIA.forEach(criteria => {
         const key = `item${itemIdx}_criteria${criteria.id}`
         const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
-        const sortedRatings = [...ratings].sort((a, b) => a - b)
-        const mid = Math.floor(sortedRatings.length / 2)
-        const median = sortedRatings.length % 2 === 0
-          ? ((sortedRatings[mid - 1] + sortedRatings[mid]) / 2).toFixed(2)
-          : sortedRatings[mid].toFixed(2)
-        medianCells.push(new TableCell({ children: [new Paragraph(median)], columnSpan: 3 }))
+        const mean = (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
+        const meanNum = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+        const variance = ratings.reduce((sum, r) => sum + Math.pow(r - meanNum, 2), 0) / ratings.length
+        const sd = Math.sqrt(variance).toFixed(1)
+        const cv = meanNum !== 0 ? (Math.sqrt(variance) / meanNum).toFixed(1) : '0.0'
+        descriptivesCells.push(new TableCell({ children: [new Paragraph(`${mean} | ${sd} | ${cv}`)], columnSpan: 3 }))
       })
-      tableRows.push(new TableRow({ children: medianCells }))
-
-      // SD row
-      const sdCells = [new TableCell({ children: [new Paragraph({ text: 'SD', bold: true })], shading: { fill: 'E6FFE6' } })]
-      DELPHI_CRITERIA.forEach(criteria => {
-        const key = `item${itemIdx}_criteria${criteria.id}`
-        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
-        const mean = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
-        const variance = ratings.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratings.length
-        const sd = Math.sqrt(variance).toFixed(2)
-        sdCells.push(new TableCell({ children: [new Paragraph(sd)], columnSpan: 3 }))
-      })
-      tableRows.push(new TableRow({ children: sdCells }))
-
-      // CV row
-      const cvCells = [new TableCell({ children: [new Paragraph({ text: 'CV', bold: true })], shading: { fill: 'FFFFE6' } })]
-      DELPHI_CRITERIA.forEach(criteria => {
-        const key = `item${itemIdx}_criteria${criteria.id}`
-        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
-        const mean = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
-        const variance = ratings.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratings.length
-        const cv = mean !== 0 ? (Math.sqrt(variance) / mean).toFixed(2) : '0.00'
-        cvCells.push(new TableCell({ children: [new Paragraph(cv)], columnSpan: 3 }))
-      })
-      tableRows.push(new TableRow({ children: cvCells }))
+      tableRows.push(new TableRow({ children: descriptivesCells }))
     })
+
+    // S-CVI row
+    const scviCells = [new TableCell({ children: [new Paragraph({ text: 'S-CVI', bold: true })], shading: { fill: 'E6E6FA' } })]
+    DELPHI_CRITERIA.forEach(criteria => {
+      let totalICVI = 0
+      translatedScaleItems.forEach((_, itemIdx) => {
+        const key = `item${itemIdx}_criteria${criteria.id}`
+        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+        const highRatings = ratings.filter(r => r >= 7).length
+        const icvi = highRatings / expertResponses.length
+        totalICVI += icvi
+      })
+      const scvi = (totalICVI / translatedScaleItems.length).toFixed(2)
+      scviCells.push(new TableCell({ children: [new Paragraph(scvi)], columnSpan: 3 }))
+    })
+    tableRows.push(new TableRow({ children: scviCells }))
 
     // S-CVI/UA row
     const scviuaCells = [new TableCell({ children: [new Paragraph({ text: 'S-CVI/UA', bold: true })], shading: { fill: 'E0FFFF' } })]
@@ -515,6 +507,59 @@ function ProjectDashboard({ project, user, onBack }) {
       scviuaCells.push(new TableCell({ children: [new Paragraph(scviua)], columnSpan: 3 }))
     })
     tableRows.push(new TableRow({ children: scviuaCells }))
+
+    // Fleiss' Kappa row
+    if (expertResponses.length >= 2) {
+      const kappaCells = [new TableCell({ children: [new Paragraph({ text: "Fleiss' Kappa", bold: true })], shading: { fill: 'E0FFE0' } })]
+      DELPHI_CRITERIA.forEach(criteria => {
+        const n = expertResponses.length
+        const N = translatedScaleItems.length
+        const k = 10
+
+        let P_bar = 0
+        translatedScaleItems.forEach((_, itemIdx) => {
+          const key = `item${itemIdx}_criteria${criteria.id}`
+          const ratings = expertResponses.map(expert => expert.responses[key] || 0)
+          const counts = Array(k).fill(0)
+          ratings.forEach(rating => {
+            if (rating >= 0 && rating <= 9) counts[rating]++
+          })
+          let sumSquares = 0
+          counts.forEach(count => {
+            sumSquares += count * count
+          })
+          const P_i = (sumSquares - n) / (n * (n - 1))
+          P_bar += P_i
+        })
+        P_bar = P_bar / N
+
+        const allRatings = []
+        translatedScaleItems.forEach((_, itemIdx) => {
+          const key = `item${itemIdx}_criteria${criteria.id}`
+          expertResponses.forEach(expert => {
+            const rating = expert.responses[key] || 0
+            allRatings.push(rating)
+          })
+        })
+
+        const categoryCounts = Array(k).fill(0)
+        allRatings.forEach(rating => {
+          if (rating >= 0 && rating <= 9) categoryCounts[rating]++
+        })
+
+        let P_e = 0
+        const totalRatings = allRatings.length
+        categoryCounts.forEach(count => {
+          const p_j = count / totalRatings
+          P_e += p_j * p_j
+        })
+
+        const kappa = P_e === 1 ? 1 : (P_bar - P_e) / (1 - P_e)
+        const kappaValue = kappa.toFixed(3)
+        kappaCells.push(new TableCell({ children: [new Paragraph(kappaValue)], columnSpan: 3 }))
+      })
+      tableRows.push(new TableRow({ children: kappaCells }))
+    }
 
     const evaluationTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
@@ -538,29 +583,29 @@ function ProjectDashboard({ project, user, onBack }) {
       }),
       new Paragraph({
         children: [
-          new TextRun({ text: 'Median: ', bold: true }),
-          new TextRun('Middle value of all expert ratings. Ideal: ≥7.0 indicates strong agreement.')
+          new TextRun({ text: 'M / SD / Coef. Var: ', bold: true }),
+          new TextRun('M = Mean rating, SD = Standard Deviation, CV = Coefficient of Variation (SD/Mean). Ideal: M ≥7.0, SD <1.5, CV <0.20. Shows central tendency, variability, and relative stability.')
         ],
         spacing: { after: 100 }
       }),
       new Paragraph({
         children: [
-          new TextRun({ text: 'SD (Standard Deviation): ', bold: true }),
-          new TextRun('Measure of rating variability. Formula: √[Σ(rating - mean)² / n]. Lower is better: <1.5 shows good consensus.')
+          new TextRun({ text: 'S-CVI (Scale Content Validity Index): ', bold: true }),
+          new TextRun('Average of all I-CVI values for each criterion. Formula: Σ(I-CVI) / Total items. Acceptable: ≥0.90 (Polit & Beck, 2006)')
         ],
         spacing: { after: 100 }
       }),
       new Paragraph({
         children: [
-          new TextRun({ text: 'CV (Coefficient of Variation): ', bold: true }),
-          new TextRun('Relative variability (SD / Mean). Lower is better: <0.20 indicates stability.')
+          new TextRun({ text: 'S-CVI/UA (Universal Agreement): ', bold: true }),
+          new TextRun('Proportion of items with perfect agreement (I-CVI = 1.00). Formula: (Items with I-CVI = 1.00) / Total items. Acceptable: ≥0.80 (Polit & Beck, 2006)')
         ],
         spacing: { after: 100 }
       }),
       new Paragraph({
         children: [
-          new TextRun({ text: 'S-CVI/UA (Scale Content Validity Index / Universal Agreement): ', bold: true }),
-          new TextRun('Proportion of items with perfect agreement (I-CVI = 1.00) per criterion. Formula: (Count of items with I-CVI = 1.00) / Total items. Acceptable: ≥0.80 (Polit & Beck, 2006)')
+          new TextRun({ text: "Fleiss' Kappa (Inter-rater Reliability): ", bold: true }),
+          new TextRun('Measures agreement among multiple raters. Interpretation: <0: Poor | 0-0.20: Slight | 0.21-0.40: Fair | 0.41-0.60: Moderate | 0.61-0.80: Substantial | 0.81-1.00: Almost Perfect. Acceptable: ≥0.60 (Landis & Koch, 1977)')
         ],
         spacing: { after: 400 }
       })
@@ -2347,30 +2392,24 @@ function ProjectDashboard({ project, user, onBack }) {
                                 const key = `item${itemIdx}_criteria${criteriaId}`
                                 const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
 
-                                if (ratings.length === 0) return { icvi: '0.00', median: '0.00', sd: '0.00', cv: '0.00' }
+                                if (ratings.length === 0) return { icvi: '0.0', mean: '0.0', sd: '0.0', cv: '0.0' }
 
                                 // I-CVI: Count ratings >= 7, divide by total experts
                                 const highRatings = ratings.filter(r => r >= 7).length
-                                const icvi = (highRatings / expertResponses.length).toFixed(2)
-
-                                // Median
-                                const sortedRatings = [...ratings].sort((a, b) => a - b)
-                                const mid = Math.floor(sortedRatings.length / 2)
-                                const median = sortedRatings.length % 2 === 0
-                                  ? ((sortedRatings[mid - 1] + sortedRatings[mid]) / 2).toFixed(2)
-                                  : sortedRatings[mid].toFixed(2)
+                                const icvi = (highRatings / expertResponses.length).toFixed(1)
 
                                 // Mean
-                                const mean = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+                                const mean = (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
 
                                 // Standard Deviation
-                                const variance = ratings.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratings.length
-                                const sd = Math.sqrt(variance).toFixed(2)
+                                const meanNum = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+                                const variance = ratings.reduce((sum, r) => sum + Math.pow(r - meanNum, 2), 0) / ratings.length
+                                const sd = Math.sqrt(variance).toFixed(1)
 
                                 // Coefficient of Variation
-                                const cv = mean !== 0 ? (Math.sqrt(variance) / mean).toFixed(2) : '0.00'
+                                const cv = meanNum !== 0 ? (Math.sqrt(variance) / meanNum).toFixed(1) : '0.0'
 
-                                return { icvi, median, sd, cv }
+                                return { icvi, mean, sd, cv }
                               }
 
                               return (
@@ -2413,7 +2452,7 @@ function ProjectDashboard({ project, user, onBack }) {
                                       const stats = calculateItemStatistics(criteriaId)
                                       return (
                                         <td key={`icvi-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
-                                          <div className="text-blue-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                          <div className="text-blue-400 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
                                             {stats.icvi}
                                           </div>
                                         </td>
@@ -2421,51 +2460,21 @@ function ProjectDashboard({ project, user, onBack }) {
                                     })}
                                   </tr>
 
-                                  {/* Median Row */}
-                                  <tr className="bg-purple-900 bg-opacity-40">
-                                    <td className="border-2 border-orange-500 p-2 text-purple-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                      Median
+                                  {/* M / SD / Coef. Var Row */}
+                                  <tr className="bg-gray-800 bg-opacity-60 border-b-4 border-orange-600">
+                                    <td className="border-2 border-orange-500 p-2 text-gray-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                      M / SD / Coef. Var
                                     </td>
                                     {[1, 2, 3, 4, 5].map(criteriaId => {
                                       const stats = calculateItemStatistics(criteriaId)
                                       return (
-                                        <td key={`median-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
-                                          <div className="text-purple-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                            {stats.median}
-                                          </div>
-                                        </td>
-                                      )
-                                    })}
-                                  </tr>
-
-                                  {/* SD Row */}
-                                  <tr className="bg-green-900 bg-opacity-40">
-                                    <td className="border-2 border-orange-500 p-2 text-green-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                      SD
-                                    </td>
-                                    {[1, 2, 3, 4, 5].map(criteriaId => {
-                                      const stats = calculateItemStatistics(criteriaId)
-                                      return (
-                                        <td key={`sd-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
-                                          <div className="text-green-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                            {stats.sd}
-                                          </div>
-                                        </td>
-                                      )
-                                    })}
-                                  </tr>
-
-                                  {/* CV Row */}
-                                  <tr className="bg-yellow-900 bg-opacity-40 border-b-4 border-orange-600">
-                                    <td className="border-2 border-orange-500 p-2 text-yellow-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                      CV
-                                    </td>
-                                    {[1, 2, 3, 4, 5].map(criteriaId => {
-                                      const stats = calculateItemStatistics(criteriaId)
-                                      return (
-                                        <td key={`cv-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
-                                          <div className="text-yellow-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                            {stats.cv}
+                                        <td key={`descriptives-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
+                                          <div className="flex justify-center items-center gap-2" style={{ fontFamily: 'monospace' }}>
+                                            <span className="text-white font-bold text-sm">{stats.mean}</span>
+                                            <span className="text-gray-400">|</span>
+                                            <span className="text-yellow-400 font-bold text-sm bg-yellow-900 bg-opacity-40 px-1">{stats.sd}</span>
+                                            <span className="text-gray-400">|</span>
+                                            <span className="text-green-400 font-bold text-sm">{stats.cv}</span>
                                           </div>
                                         </td>
                                       )
@@ -2475,9 +2484,38 @@ function ProjectDashboard({ project, user, onBack }) {
                               )
                             })}
 
+                            {/* S-CVI Row - Scale Content Validity Index (Average) */}
+                            {translatedScaleItems.length > 0 && (
+                              <tr className="bg-gradient-to-r from-purple-900 to-indigo-900 bg-opacity-60 border-t-4 border-purple-400">
+                                <td className="border-2 border-orange-500 p-3 text-purple-300 font-bold" style={{ fontFamily: 'monospace' }}>
+                                  S-CVI
+                                </td>
+                                {[1, 2, 3, 4, 5].map(criteriaId => {
+                                  // Calculate S-CVI: Average of all I-CVI values for this criterion
+                                  let totalICVI = 0
+                                  translatedScaleItems.forEach((_, itemIdx) => {
+                                    const key = `item${itemIdx}_criteria${criteriaId}`
+                                    const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+                                    const highRatings = ratings.filter(r => r >= 7).length
+                                    const icvi = highRatings / expertResponses.length
+                                    totalICVI += icvi
+                                  })
+                                  const scvi = (totalICVI / translatedScaleItems.length).toFixed(2)
+
+                                  return (
+                                    <td key={`scvi-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-3 text-center">
+                                      <div className="text-purple-400 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
+                                        {scvi}
+                                      </div>
+                                    </td>
+                                  )
+                                })}
+                              </tr>
+                            )}
+
                             {/* S-CVI/UA Row - Scale Content Validity Index / Universal Agreement */}
                             {translatedScaleItems.length > 0 && (
-                              <tr className="bg-gradient-to-r from-cyan-900 to-blue-900 bg-opacity-60 border-t-4 border-cyan-400">
+                              <tr className="bg-gradient-to-r from-cyan-900 to-blue-900 bg-opacity-60">
                                 <td className="border-2 border-orange-500 p-3 text-cyan-300 font-bold" style={{ fontFamily: 'monospace' }}>
                                   S-CVI/UA
                                 </td>
@@ -2497,6 +2535,79 @@ function ProjectDashboard({ project, user, onBack }) {
                                     <td key={`scviua-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-3 text-center">
                                       <div className="text-cyan-400 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
                                         {scviua}
+                                      </div>
+                                    </td>
+                                  )
+                                })}
+                              </tr>
+                            )}
+
+                            {/* Fleiss' Kappa Row - Inter-rater Reliability */}
+                            {translatedScaleItems.length > 0 && expertResponses.length >= 2 && (
+                              <tr className="bg-gradient-to-r from-green-900 to-teal-900 bg-opacity-60 border-b-4 border-green-400">
+                                <td className="border-2 border-orange-500 p-3 text-green-300 font-bold" style={{ fontFamily: 'monospace' }}>
+                                  Fleiss' Kappa
+                                </td>
+                                {[1, 2, 3, 4, 5].map(criteriaId => {
+                                  // Calculate Fleiss' Kappa for this criterion across all items
+                                  const n = expertResponses.length // number of raters
+                                  const N = translatedScaleItems.length // number of items
+                                  const k = 10 // number of categories (ratings 0-9)
+
+                                  // Count ratings in each category for each item
+                                  let P_bar = 0 // average extent of agreement
+
+                                  translatedScaleItems.forEach((_, itemIdx) => {
+                                    const key = `item${itemIdx}_criteria${criteriaId}`
+                                    const ratings = expertResponses.map(expert => expert.responses[key] || 0)
+
+                                    // Count frequency of each rating (0-9)
+                                    const counts = Array(k).fill(0)
+                                    ratings.forEach(rating => {
+                                      if (rating >= 0 && rating <= 9) counts[rating]++
+                                    })
+
+                                    // Calculate P_i for this item
+                                    let sumSquares = 0
+                                    counts.forEach(count => {
+                                      sumSquares += count * count
+                                    })
+                                    const P_i = (sumSquares - n) / (n * (n - 1))
+                                    P_bar += P_i
+                                  })
+
+                                  P_bar = P_bar / N
+
+                                  // Calculate P_e (expected agreement by chance)
+                                  const allRatings = []
+                                  translatedScaleItems.forEach((_, itemIdx) => {
+                                    const key = `item${itemIdx}_criteria${criteriaId}`
+                                    expertResponses.forEach(expert => {
+                                      const rating = expert.responses[key] || 0
+                                      allRatings.push(rating)
+                                    })
+                                  })
+
+                                  const categoryCounts = Array(k).fill(0)
+                                  allRatings.forEach(rating => {
+                                    if (rating >= 0 && rating <= 9) categoryCounts[rating]++
+                                  })
+
+                                  let P_e = 0
+                                  const totalRatings = allRatings.length
+                                  categoryCounts.forEach(count => {
+                                    const p_j = count / totalRatings
+                                    P_e += p_j * p_j
+                                  })
+
+                                  // Calculate Fleiss' Kappa
+                                  const kappa = P_e === 1 ? 1 : (P_bar - P_e) / (1 - P_e)
+                                  const kappaValue = kappa.toFixed(3)
+
+                                  return (
+                                    <td key={`kappa-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-3 text-center">
+                                      <div className="text-green-400 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
+                                        {kappaValue}
                                       </div>
                                     </td>
                                   )
@@ -2542,29 +2653,29 @@ function ProjectDashboard({ project, user, onBack }) {
                               <p className="text-blue-300 text-xs"><span className="font-bold">Formula:</span> (Count of ratings ≥7) / Total experts</p>
                               <p className="text-green-400 text-xs mt-1"><span className="font-bold">Acceptable:</span> ≥0.78 (Lynn, 1986)</p>
                             </div>
+                            <div className="bg-black bg-opacity-40 border border-gray-500 rounded p-3">
+                              <div className="text-gray-300 font-bold mb-1">M / SD / Coef. Var</div>
+                              <p className="text-gray-200 text-xs mb-1"><span className="font-bold">M:</span> Mean rating | <span className="font-bold">SD:</span> Standard Deviation | <span className="font-bold">CV:</span> Coefficient of Variation</p>
+                              <p className="text-gray-300 text-xs"><span className="font-bold">Ideal:</span> M ≥7.0, SD &lt;1.5, CV &lt;0.20</p>
+                              <p className="text-green-400 text-xs mt-1">Shows central tendency, variability, and relative stability</p>
+                            </div>
                             <div className="bg-black bg-opacity-40 border border-purple-500 rounded p-3">
-                              <div className="text-purple-400 font-bold mb-1">Median</div>
-                              <p className="text-purple-200 text-xs mb-1">Middle value of all expert ratings</p>
-                              <p className="text-purple-300 text-xs"><span className="font-bold">Interpretation:</span> Central tendency of expert consensus</p>
-                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Ideal:</span> ≥7.0 indicates strong agreement</p>
+                              <div className="text-purple-400 font-bold mb-1">S-CVI (Scale Content Validity Index)</div>
+                              <p className="text-purple-200 text-xs mb-1">Average of all I-CVI values for each criterion</p>
+                              <p className="text-purple-300 text-xs"><span className="font-bold">Formula:</span> Σ(I-CVI) / Total items</p>
+                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Acceptable:</span> ≥0.90 (Polit & Beck, 2006)</p>
                             </div>
-                            <div className="bg-black bg-opacity-40 border border-green-500 rounded p-3">
-                              <div className="text-green-400 font-bold mb-1">SD (Standard Deviation)</div>
-                              <p className="text-green-200 text-xs mb-1">Measure of rating variability/dispersion</p>
-                              <p className="text-green-300 text-xs"><span className="font-bold">Formula:</span> √[Σ(rating - mean)² / n]</p>
-                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Lower is better:</span> &lt;1.5 shows good consensus</p>
-                            </div>
-                            <div className="bg-black bg-opacity-40 border border-yellow-500 rounded p-3">
-                              <div className="text-yellow-400 font-bold mb-1">CV (Coefficient of Variation)</div>
-                              <p className="text-yellow-200 text-xs mb-1">Relative variability (SD / Mean)</p>
-                              <p className="text-yellow-300 text-xs"><span className="font-bold">Formula:</span> SD / Mean</p>
-                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Lower is better:</span> &lt;0.20 indicates stability</p>
-                            </div>
-                            <div className="bg-black bg-opacity-40 border border-cyan-500 rounded p-3 md:col-span-2">
-                              <div className="text-cyan-400 font-bold mb-1">S-CVI/UA (Scale Content Validity Index / Universal Agreement)</div>
-                              <p className="text-cyan-200 text-xs mb-1">Proportion of items with perfect agreement (I-CVI = 1.00) per criterion</p>
-                              <p className="text-cyan-300 text-xs"><span className="font-bold">Formula:</span> (Count of items with I-CVI = 1.00) / Total items</p>
+                            <div className="bg-black bg-opacity-40 border border-cyan-500 rounded p-3">
+                              <div className="text-cyan-400 font-bold mb-1">S-CVI/UA (Universal Agreement)</div>
+                              <p className="text-cyan-200 text-xs mb-1">Proportion of items with perfect agreement (I-CVI = 1.00)</p>
+                              <p className="text-cyan-300 text-xs"><span className="font-bold">Formula:</span> (Items with I-CVI = 1.00) / Total items</p>
                               <p className="text-green-400 text-xs mt-1"><span className="font-bold">Acceptable:</span> ≥0.80 (Polit & Beck, 2006)</p>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-green-500 rounded p-3 md:col-span-2">
+                              <div className="text-green-400 font-bold mb-1">Fleiss' Kappa (Inter-rater Reliability)</div>
+                              <p className="text-green-200 text-xs mb-1">Measures agreement among multiple raters for categorical ratings</p>
+                              <p className="text-green-300 text-xs"><span className="font-bold">Interpretation:</span> &lt;0: Poor | 0-0.20: Slight | 0.21-0.40: Fair | 0.41-0.60: Moderate | 0.61-0.80: Substantial | 0.81-1.00: Almost Perfect</p>
+                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Acceptable:</span> ≥0.60 (Landis & Koch, 1977)</p>
                             </div>
                           </div>
                         </div>
