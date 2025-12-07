@@ -244,7 +244,395 @@ function ProjectDashboard({ project, user, onBack }) {
     }
   }, [])
 
-  // Download APA formatted report as Word document
+  // Download Delphi Evaluation Report
+  const downloadDelphiReport = async () => {
+    const DELPHI_CRITERIA = [
+      { id: 1, category: 'content', text: 'Appropriateness of language used' },
+      { id: 2, category: 'content', text: 'Assessment of the concept' },
+      { id: 3, category: 'content', text: 'Retains the conceptual meaning' },
+      { id: 4, category: 'consensual', text: 'Appropriateness with the individuals of 18 years and above' },
+      { id: 5, category: 'consensual', text: 'Cultural relevance' }
+    ]
+
+    const docSections = []
+
+    // Title
+    docSections.push(
+      new Paragraph({
+        text: 'Delphi Method Evaluation Report',
+        heading: HeadingLevel.TITLE,
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 }
+      })
+    )
+
+    // Project info
+    docSections.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'Project: ', bold: true }),
+          new TextRun(project.name)
+        ],
+        spacing: { after: 100 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'Date: ', bold: true }),
+          new TextRun(new Date().toLocaleDateString())
+        ],
+        spacing: { after: 400 }
+      })
+    )
+
+    // Methodology explanation
+    docSections.push(
+      new Paragraph({
+        text: 'Delphi Methodology - Aggregated Consensus',
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 200, after: 200 }
+      }),
+      new Paragraph({
+        text: `This evaluation database records individual assessments from ${expertResponses.length} expert${expertResponses.length !== 1 ? 's' : ''} during the Delphi process. The table displays aggregated percentage scores from all experts for each item, providing a consolidated view of expert consensus. Values update automatically as additional expert evaluations are added.`,
+        spacing: { after: 400 }
+      })
+    )
+
+    // Summary Statistics
+    docSections.push(
+      new Paragraph({
+        text: 'Consensus Summary',
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 200, after: 200 }
+      })
+    )
+
+    const summaryTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ text: 'Metric', bold: true })], shading: { fill: 'D3D3D3' } }),
+            new TableCell({ children: [new Paragraph({ text: 'Value', bold: true })], shading: { fill: 'D3D3D3' } })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph('Total Experts')] }),
+            new TableCell({ children: [new Paragraph(expertResponses.length.toString())] })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph('Total Items')] }),
+            new TableCell({ children: [new Paragraph(translatedScaleItems.length.toString())] })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph('Total Evaluations')] }),
+            new TableCell({ children: [new Paragraph((expertResponses.length * translatedScaleItems.length * 5).toString())] })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph('Criteria Assessed')] }),
+            new TableCell({ children: [new Paragraph('5')] })
+          ]
+        })
+      ]
+    })
+    docSections.push(summaryTable)
+
+    // Expert Panel
+    docSections.push(
+      new Paragraph({
+        text: 'Expert Panel',
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 }
+      })
+    )
+
+    expertResponses.forEach((expert, index) => {
+      docSections.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `Expert ${index + 1}: `, bold: true }),
+            new TextRun(expert.expertName)
+          ],
+          spacing: { after: 50 }
+        }),
+        new Paragraph({
+          text: `  Qualification: ${expert.expertQualification || 'N/A'}`,
+          spacing: { after: 50 }
+        }),
+        new Paragraph({
+          text: `  Experience: ${expert.expertYearsOfExperience || 'N/A'} years`,
+          spacing: { after: 50 }
+        }),
+        new Paragraph({
+          text: `  Email: ${expert.expertEmail}`,
+          spacing: { after: 200 }
+        })
+      )
+    })
+
+    // Aggregated Ratings Table
+    docSections.push(
+      new Paragraph({
+        text: 'Aggregated Expert Ratings',
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 }
+      }),
+      new Paragraph({
+        text: 'Percentages by Rating Categories (0-3: Low, 4-6: Medium, 7-9: High)',
+        italics: true,
+        spacing: { after: 200 }
+      })
+    )
+
+    // Create main evaluation table
+    const headerRow1Cells = [new TableCell({ children: [new Paragraph('')], shading: { fill: 'D3D3D3' } })]
+    const headerRow2Cells = [new TableCell({ children: [new Paragraph('')], shading: { fill: 'D3D3D3' } })]
+    const headerRow3Cells = [new TableCell({ children: [new Paragraph({ text: 'Item', bold: true })], shading: { fill: 'D3D3D3' } })]
+
+    // Build 3-row header
+    DELPHI_CRITERIA.forEach(criteria => {
+      headerRow1Cells.push(new TableCell({
+        children: [new Paragraph({ text: criteria.category === 'content' ? 'Content-related' : 'Consensual-related', bold: true })],
+        shading: { fill: 'FFA500' },
+        columnSpan: 3
+      }))
+      headerRow2Cells.push(new TableCell({
+        children: [new Paragraph({ text: `C${criteria.id}`, bold: true })],
+        shading: { fill: 'FFB84D' },
+        columnSpan: 3
+      }))
+      headerRow3Cells.push(
+        new TableCell({ children: [new Paragraph({ text: '0-3', bold: true })], shading: { fill: 'FFD699' } }),
+        new TableCell({ children: [new Paragraph({ text: '4-6', bold: true })], shading: { fill: 'FFD699' } }),
+        new TableCell({ children: [new Paragraph({ text: '7-9', bold: true })], shading: { fill: 'FFD699' } })
+      )
+    })
+
+    const tableRows = [
+      new TableRow({ children: headerRow1Cells }),
+      new TableRow({ children: headerRow2Cells }),
+      new TableRow({ children: headerRow3Cells })
+    ]
+
+    // Add item rows with statistics
+    translatedScaleItems.forEach((item, itemIdx) => {
+      // Item row
+      const itemCells = [new TableCell({ children: [new Paragraph({ text: `Item ${itemIdx + 1}`, bold: true })] })]
+
+      DELPHI_CRITERIA.forEach(criteria => {
+        const key = `item${itemIdx}_criteria${criteria.id}`
+        const totalExperts = expertResponses.length
+
+        let lowCount = 0, mediumCount = 0, highCount = 0
+        expertResponses.forEach(expert => {
+          const rating = expert.responses[key] || 0
+          if (rating >= 0 && rating <= 3) lowCount++
+          else if (rating >= 4 && rating <= 6) mediumCount++
+          else if (rating >= 7 && rating <= 9) highCount++
+        })
+
+        const lowPercent = ((lowCount / totalExperts) * 100).toFixed(1)
+        const mediumPercent = ((mediumCount / totalExperts) * 100).toFixed(1)
+        const highPercent = ((highCount / totalExperts) * 100).toFixed(1)
+
+        itemCells.push(
+          new TableCell({ children: [new Paragraph(`${lowPercent}%`)] }),
+          new TableCell({ children: [new Paragraph(`${mediumPercent}%`)] }),
+          new TableCell({ children: [new Paragraph(`${highPercent}%`)] })
+        )
+      })
+
+      tableRows.push(new TableRow({ children: itemCells }))
+
+      // I-CVI row
+      const icviCells = [new TableCell({ children: [new Paragraph({ text: 'I-CVI', bold: true })], shading: { fill: 'E6F2FF' } })]
+      DELPHI_CRITERIA.forEach(criteria => {
+        const key = `item${itemIdx}_criteria${criteria.id}`
+        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+        const highRatings = ratings.filter(r => r >= 7).length
+        const icvi = (highRatings / expertResponses.length).toFixed(2)
+        icviCells.push(new TableCell({ children: [new Paragraph(icvi)], columnSpan: 3 }))
+      })
+      tableRows.push(new TableRow({ children: icviCells }))
+
+      // Median row
+      const medianCells = [new TableCell({ children: [new Paragraph({ text: 'Median', bold: true })], shading: { fill: 'F0E6FF' } })]
+      DELPHI_CRITERIA.forEach(criteria => {
+        const key = `item${itemIdx}_criteria${criteria.id}`
+        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+        const sortedRatings = [...ratings].sort((a, b) => a - b)
+        const mid = Math.floor(sortedRatings.length / 2)
+        const median = sortedRatings.length % 2 === 0
+          ? ((sortedRatings[mid - 1] + sortedRatings[mid]) / 2).toFixed(2)
+          : sortedRatings[mid].toFixed(2)
+        medianCells.push(new TableCell({ children: [new Paragraph(median)], columnSpan: 3 }))
+      })
+      tableRows.push(new TableRow({ children: medianCells }))
+
+      // SD row
+      const sdCells = [new TableCell({ children: [new Paragraph({ text: 'SD', bold: true })], shading: { fill: 'E6FFE6' } })]
+      DELPHI_CRITERIA.forEach(criteria => {
+        const key = `item${itemIdx}_criteria${criteria.id}`
+        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+        const mean = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+        const variance = ratings.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratings.length
+        const sd = Math.sqrt(variance).toFixed(2)
+        sdCells.push(new TableCell({ children: [new Paragraph(sd)], columnSpan: 3 }))
+      })
+      tableRows.push(new TableRow({ children: sdCells }))
+
+      // CV row
+      const cvCells = [new TableCell({ children: [new Paragraph({ text: 'CV', bold: true })], shading: { fill: 'FFFFE6' } })]
+      DELPHI_CRITERIA.forEach(criteria => {
+        const key = `item${itemIdx}_criteria${criteria.id}`
+        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+        const mean = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+        const variance = ratings.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratings.length
+        const cv = mean !== 0 ? (Math.sqrt(variance) / mean).toFixed(2) : '0.00'
+        cvCells.push(new TableCell({ children: [new Paragraph(cv)], columnSpan: 3 }))
+      })
+      tableRows.push(new TableRow({ children: cvCells }))
+    })
+
+    // S-CVI/UA row
+    const scviuaCells = [new TableCell({ children: [new Paragraph({ text: 'S-CVI/UA', bold: true })], shading: { fill: 'E0FFFF' } })]
+    DELPHI_CRITERIA.forEach(criteria => {
+      let perfectItems = 0
+      translatedScaleItems.forEach((_, itemIdx) => {
+        const key = `item${itemIdx}_criteria${criteria.id}`
+        const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+        const highRatings = ratings.filter(r => r >= 7).length
+        const icvi = highRatings / expertResponses.length
+        if (icvi === 1.00) perfectItems++
+      })
+      const scviua = (perfectItems / translatedScaleItems.length).toFixed(2)
+      scviuaCells.push(new TableCell({ children: [new Paragraph(scviua)], columnSpan: 3 }))
+    })
+    tableRows.push(new TableRow({ children: scviuaCells }))
+
+    const evaluationTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: tableRows
+    })
+    docSections.push(evaluationTable)
+
+    // Statistical Metrics Explanation
+    docSections.push(
+      new Paragraph({
+        text: 'Statistical Metrics Explained',
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'I-CVI (Item Content Validity Index): ', bold: true }),
+          new TextRun('Proportion of experts rating ≥7 for each item-criterion. Formula: (Count of ratings ≥7) / Total experts. Acceptable: ≥0.78 (Lynn, 1986)')
+        ],
+        spacing: { after: 100 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'Median: ', bold: true }),
+          new TextRun('Middle value of all expert ratings. Ideal: ≥7.0 indicates strong agreement.')
+        ],
+        spacing: { after: 100 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'SD (Standard Deviation): ', bold: true }),
+          new TextRun('Measure of rating variability. Formula: √[Σ(rating - mean)² / n]. Lower is better: <1.5 shows good consensus.')
+        ],
+        spacing: { after: 100 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'CV (Coefficient of Variation): ', bold: true }),
+          new TextRun('Relative variability (SD / Mean). Lower is better: <0.20 indicates stability.')
+        ],
+        spacing: { after: 100 }
+      }),
+      new Paragraph({
+        children: [
+          new TextRun({ text: 'S-CVI/UA (Scale Content Validity Index / Universal Agreement): ', bold: true }),
+          new TextRun('Proportion of items with perfect agreement (I-CVI = 1.00) per criterion. Formula: (Count of items with I-CVI = 1.00) / Total items. Acceptable: ≥0.80 (Polit & Beck, 2006)')
+        ],
+        spacing: { after: 400 }
+      })
+    )
+
+    // Criteria Legend
+    docSections.push(
+      new Paragraph({
+        text: 'Delphi Validation Criteria',
+        heading: HeadingLevel.HEADING_1,
+        spacing: { before: 400, after: 200 }
+      })
+    )
+
+    DELPHI_CRITERIA.forEach(criteria => {
+      docSections.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `C${criteria.id}: `, bold: true }),
+            new TextRun(criteria.text),
+            new TextRun({ text: ` (${criteria.category === 'content' ? 'Content-related' : 'Consensual-related'})`, italics: true })
+          ],
+          spacing: { after: 100 }
+        })
+      )
+    })
+
+    // Expert Remarks
+    if (expertResponses.some(expert => expert.expertRemarks)) {
+      docSections.push(
+        new Paragraph({
+          text: 'Expert Remarks',
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 400, after: 200 }
+        })
+      )
+
+      expertResponses.forEach((expert, idx) => {
+        if (expert.expertRemarks) {
+          docSections.push(
+            new Paragraph({
+              children: [
+                new TextRun({ text: `${expert.expertName}: `, bold: true }),
+                new TextRun(expert.expertRemarks)
+              ],
+              spacing: { after: 200 }
+            })
+          )
+        }
+      })
+    }
+
+    // Create document
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: docSections
+      }]
+    })
+
+    // Generate and download
+    try {
+      const blob = await Packer.toBlob(doc)
+      saveAs(blob, `Delphi_Evaluation_Report_${project.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.docx`)
+      toast.success('Delphi report downloaded successfully!')
+    } catch (error) {
+      console.error('Error generating document:', error)
+      toast.error('Failed to generate document')
+    }
+  }
+
+  // Download APA formatted report as Word document (Face Validity)
   const downloadAPAReport = async () => {
     // Calculate statistics
     const totalItems = translatedScaleItems.length
@@ -1776,13 +2164,15 @@ function ProjectDashboard({ project, user, onBack }) {
                         View expert ratings (1-9 scale) for each validation criterion
                       </p>
                     </div>
-                    <button
-                      onClick={downloadAPAReport}
-                      className="bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-500 transition border-2 border-green-600"
-                      style={{ fontFamily: 'monospace', boxShadow: '0 0 10px rgba(34, 197, 94, 0.5)' }}
-                    >
-                      📥 DOWNLOAD REPORT
-                    </button>
+                    {expertResponses.length > 0 && (
+                      <button
+                        onClick={downloadDelphiReport}
+                        className="bg-green-600 text-white px-6 py-3 rounded font-bold hover:bg-green-500 transition border-2 border-green-600"
+                        style={{ fontFamily: 'monospace', boxShadow: '0 0 10px rgba(34, 197, 94, 0.5)' }}
+                      >
+                        📥 DOWNLOAD DELPHI REPORT
+                      </button>
+                    )}
                   </div>
 
                   {expertResponses.length === 0 ? (
