@@ -1952,36 +1952,167 @@ function ProjectDashboard({ project, user, onBack }) {
                                 }
                               }
 
+                              // Calculate I-CVI and descriptive statistics for this item
+                              const calculateItemStatistics = (criteriaId) => {
+                                const key = `item${itemIdx}_criteria${criteriaId}`
+                                const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+
+                                if (ratings.length === 0) return { icvi: '0.00', median: '0.00', sd: '0.00', cv: '0.00' }
+
+                                // I-CVI: Count ratings >= 7, divide by total experts
+                                const highRatings = ratings.filter(r => r >= 7).length
+                                const icvi = (highRatings / expertResponses.length).toFixed(2)
+
+                                // Median
+                                const sortedRatings = [...ratings].sort((a, b) => a - b)
+                                const mid = Math.floor(sortedRatings.length / 2)
+                                const median = sortedRatings.length % 2 === 0
+                                  ? ((sortedRatings[mid - 1] + sortedRatings[mid]) / 2).toFixed(2)
+                                  : sortedRatings[mid].toFixed(2)
+
+                                // Mean
+                                const mean = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+
+                                // Standard Deviation
+                                const variance = ratings.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / ratings.length
+                                const sd = Math.sqrt(variance).toFixed(2)
+
+                                // Coefficient of Variation
+                                const cv = mean !== 0 ? (Math.sqrt(variance) / mean).toFixed(2) : '0.00'
+
+                                return { icvi, median, sd, cv }
+                              }
+
                               return (
-                                <tr key={itemIdx} className="border-b border-orange-700 bg-black bg-opacity-60">
-                                  <td className="border-2 border-orange-500 p-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
-                                    Item {itemIdx + 1}
-                                  </td>
-                                  {[1, 2, 3, 4, 5].map(criteriaId => {
-                                    const percentages = calculateCategoryPercentages(criteriaId)
-                                    return (
-                                      <>
-                                        <td key={`${criteriaId}-low`} className="border-2 border-orange-500 p-2 text-center">
-                                          <div className="text-red-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                            {percentages.low}
+                                <>
+                                  {/* Item Row */}
+                                  <tr key={itemIdx} className="border-b border-orange-700 bg-black bg-opacity-60">
+                                    <td className="border-2 border-orange-500 p-3 text-white font-bold" style={{ fontFamily: 'monospace' }}>
+                                      Item {itemIdx + 1}
+                                    </td>
+                                    {[1, 2, 3, 4, 5].map(criteriaId => {
+                                      const percentages = calculateCategoryPercentages(criteriaId)
+                                      return (
+                                        <>
+                                          <td key={`${criteriaId}-low`} className="border-2 border-orange-500 p-2 text-center">
+                                            <div className="text-red-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                              {percentages.low}
+                                            </div>
+                                          </td>
+                                          <td key={`${criteriaId}-medium`} className="border-2 border-orange-500 p-2 text-center">
+                                            <div className="text-yellow-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                              {percentages.medium}
+                                            </div>
+                                          </td>
+                                          <td key={`${criteriaId}-high`} className="border-2 border-orange-500 p-2 text-center">
+                                            <div className="text-green-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                              {percentages.high}
+                                            </div>
+                                          </td>
+                                        </>
+                                      )
+                                    })}
+                                  </tr>
+
+                                  {/* I-CVI Row */}
+                                  <tr className="bg-blue-900 bg-opacity-40">
+                                    <td className="border-2 border-orange-500 p-2 text-blue-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                      I-CVI
+                                    </td>
+                                    {[1, 2, 3, 4, 5].map(criteriaId => {
+                                      const stats = calculateItemStatistics(criteriaId)
+                                      return (
+                                        <td key={`icvi-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
+                                          <div className="text-blue-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                            {stats.icvi}
                                           </div>
                                         </td>
-                                        <td key={`${criteriaId}-medium`} className="border-2 border-orange-500 p-2 text-center">
-                                          <div className="text-yellow-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                            {percentages.medium}
+                                      )
+                                    })}
+                                  </tr>
+
+                                  {/* Median Row */}
+                                  <tr className="bg-purple-900 bg-opacity-40">
+                                    <td className="border-2 border-orange-500 p-2 text-purple-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                      Median
+                                    </td>
+                                    {[1, 2, 3, 4, 5].map(criteriaId => {
+                                      const stats = calculateItemStatistics(criteriaId)
+                                      return (
+                                        <td key={`median-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
+                                          <div className="text-purple-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                            {stats.median}
                                           </div>
                                         </td>
-                                        <td key={`${criteriaId}-high`} className="border-2 border-orange-500 p-2 text-center">
+                                      )
+                                    })}
+                                  </tr>
+
+                                  {/* SD Row */}
+                                  <tr className="bg-green-900 bg-opacity-40">
+                                    <td className="border-2 border-orange-500 p-2 text-green-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                      SD
+                                    </td>
+                                    {[1, 2, 3, 4, 5].map(criteriaId => {
+                                      const stats = calculateItemStatistics(criteriaId)
+                                      return (
+                                        <td key={`sd-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
                                           <div className="text-green-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
-                                            {percentages.high}
+                                            {stats.sd}
                                           </div>
                                         </td>
-                                      </>
-                                    )
-                                  })}
-                                </tr>
+                                      )
+                                    })}
+                                  </tr>
+
+                                  {/* CV Row */}
+                                  <tr className="bg-yellow-900 bg-opacity-40 border-b-4 border-orange-600">
+                                    <td className="border-2 border-orange-500 p-2 text-yellow-300 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                      CV
+                                    </td>
+                                    {[1, 2, 3, 4, 5].map(criteriaId => {
+                                      const stats = calculateItemStatistics(criteriaId)
+                                      return (
+                                        <td key={`cv-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-2 text-center">
+                                          <div className="text-yellow-400 font-bold text-sm" style={{ fontFamily: 'monospace' }}>
+                                            {stats.cv}
+                                          </div>
+                                        </td>
+                                      )
+                                    })}
+                                  </tr>
+                                </>
                               )
                             })}
+
+                            {/* S-CVI/UA Row - Scale Content Validity Index / Universal Agreement */}
+                            {translatedScaleItems.length > 0 && (
+                              <tr className="bg-gradient-to-r from-cyan-900 to-blue-900 bg-opacity-60 border-t-4 border-cyan-400">
+                                <td className="border-2 border-orange-500 p-3 text-cyan-300 font-bold" style={{ fontFamily: 'monospace' }}>
+                                  S-CVI/UA
+                                </td>
+                                {[1, 2, 3, 4, 5].map(criteriaId => {
+                                  // Calculate S-CVI/UA: Count items with I-CVI = 1.00, divide by total items
+                                  let perfectItems = 0
+                                  translatedScaleItems.forEach((_, itemIdx) => {
+                                    const key = `item${itemIdx}_criteria${criteriaId}`
+                                    const ratings = expertResponses.map(expert => expert.responses[key] || 0).filter(r => r > 0)
+                                    const highRatings = ratings.filter(r => r >= 7).length
+                                    const icvi = highRatings / expertResponses.length
+                                    if (icvi === 1.00) perfectItems++
+                                  })
+                                  const scviua = (perfectItems / translatedScaleItems.length).toFixed(2)
+
+                                  return (
+                                    <td key={`scviua-${criteriaId}`} colSpan={3} className="border-2 border-orange-500 p-3 text-center">
+                                      <div className="text-cyan-400 font-bold text-lg" style={{ fontFamily: 'monospace' }}>
+                                        {scviua}
+                                      </div>
+                                    </td>
+                                  )
+                                })}
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                         <div className="mt-4 bg-gray-900 bg-opacity-50 border-2 border-gray-600 rounded-lg p-4">
@@ -2006,6 +2137,45 @@ function ProjectDashboard({ project, user, onBack }) {
                             <p><span className="text-orange-400 font-bold">Formula:</span> Percentage = (Number of experts in category / Total experts) × 100</p>
                             <p><span className="text-orange-400 font-bold">Example:</span> If 10 experts rate an item - 1 gives 2, 3 give 5, 6 give 8 → Low: 10%, Medium: 30%, High: 60%</p>
                             <p className="text-green-400"><span className="font-bold">✓ Auto-Update:</span> Percentages recalculate automatically when new expert responses are submitted</p>
+                          </div>
+                        </div>
+
+                        {/* Statistical Metrics Explanation */}
+                        <div className="mt-4 bg-gradient-to-r from-indigo-900 to-purple-900 bg-opacity-40 border-2 border-indigo-500 rounded-lg p-4">
+                          <h4 className="text-lg font-bold text-indigo-300 mb-3" style={{ fontFamily: 'monospace' }}>
+                            📐 STATISTICAL METRICS EXPLAINED
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" style={{ fontFamily: 'monospace' }}>
+                            <div className="bg-black bg-opacity-40 border border-blue-500 rounded p-3">
+                              <div className="text-blue-400 font-bold mb-1">I-CVI (Item Content Validity Index)</div>
+                              <p className="text-blue-200 text-xs mb-1">Proportion of experts rating ≥7 for each item-criterion</p>
+                              <p className="text-blue-300 text-xs"><span className="font-bold">Formula:</span> (Count of ratings ≥7) / Total experts</p>
+                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Acceptable:</span> ≥0.78 (Lynn, 1986)</p>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-purple-500 rounded p-3">
+                              <div className="text-purple-400 font-bold mb-1">Median</div>
+                              <p className="text-purple-200 text-xs mb-1">Middle value of all expert ratings</p>
+                              <p className="text-purple-300 text-xs"><span className="font-bold">Interpretation:</span> Central tendency of expert consensus</p>
+                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Ideal:</span> ≥7.0 indicates strong agreement</p>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-green-500 rounded p-3">
+                              <div className="text-green-400 font-bold mb-1">SD (Standard Deviation)</div>
+                              <p className="text-green-200 text-xs mb-1">Measure of rating variability/dispersion</p>
+                              <p className="text-green-300 text-xs"><span className="font-bold">Formula:</span> √[Σ(rating - mean)² / n]</p>
+                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Lower is better:</span> &lt;1.5 shows good consensus</p>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-yellow-500 rounded p-3">
+                              <div className="text-yellow-400 font-bold mb-1">CV (Coefficient of Variation)</div>
+                              <p className="text-yellow-200 text-xs mb-1">Relative variability (SD / Mean)</p>
+                              <p className="text-yellow-300 text-xs"><span className="font-bold">Formula:</span> SD / Mean</p>
+                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Lower is better:</span> &lt;0.20 indicates stability</p>
+                            </div>
+                            <div className="bg-black bg-opacity-40 border border-cyan-500 rounded p-3 md:col-span-2">
+                              <div className="text-cyan-400 font-bold mb-1">S-CVI/UA (Scale Content Validity Index / Universal Agreement)</div>
+                              <p className="text-cyan-200 text-xs mb-1">Proportion of items with perfect agreement (I-CVI = 1.00) per criterion</p>
+                              <p className="text-cyan-300 text-xs"><span className="font-bold">Formula:</span> (Count of items with I-CVI = 1.00) / Total items</p>
+                              <p className="text-green-400 text-xs mt-1"><span className="font-bold">Acceptable:</span> ≥0.80 (Polit & Beck, 2006)</p>
+                            </div>
                           </div>
                         </div>
                       </div>
